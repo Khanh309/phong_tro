@@ -15,6 +15,15 @@ class TenantPortalController extends Controller
     public function index(Request $request)
     {
         $tenantId = session('tenant_id');
+
+        // Nếu đã đăng nhập tài khoản khách thuê qua Auth
+        if (!$tenantId && auth()->check() && auth()->user()->isTenant()) {
+            $tenantId = auth()->user()->tenant_id;
+            if ($tenantId) {
+                session(['tenant_id' => $tenantId]);
+            }
+        }
+
         $phone = $request->query('phone');
 
         // Nếu có truyền SĐT qua query hoặc form
@@ -98,6 +107,11 @@ class TenantPortalController extends Controller
     public function logoutTenant()
     {
         session()->forget('tenant_id');
+        if (auth()->check() && auth()->user()->isTenant()) {
+            auth()->logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+        }
         return redirect()->route('portal.index');
     }
 

@@ -27,6 +27,8 @@ class Room extends Model
         'initial_water',
         'water_calculation_type',
         'water_rate',
+        'internet_type',
+        'internet_rate',
         'description',
     ];
 
@@ -37,7 +39,50 @@ class Room extends Model
         'electricity_rate' => 'decimal:0',
         'initial_water' => 'decimal:1',
         'water_rate' => 'decimal:0',
+        'internet_rate' => 'decimal:0',
     ];
+
+    public function getWaterTypeLabelAttribute(): string
+    {
+        return match ($this->water_calculation_type) {
+            'meter' => 'Theo đồng hồ (m³)',
+            'per_person' => 'Theo đầu người',
+            'fixed_room' => 'Khoán theo phòng',
+            default => 'Theo đồng hồ',
+        };
+    }
+
+    public function getInternetTypeLabelAttribute(): string
+    {
+        return match ($this->internet_type) {
+            'fixed' => 'Khoán theo phòng',
+            'per_person' => 'Theo đầu người',
+            'free' => 'Miễn phí',
+            default => 'Khoán theo phòng',
+        };
+    }
+
+    // Helper: Tính tiền nước phòng dựa vào cách tính & số người/khối dùng
+    public function calculateWaterAmount(int $occupantsCount = 1, float $usage = 0): float
+    {
+        return match ($this->water_calculation_type) {
+            'per_person' => $this->water_rate * max(1, $occupantsCount),
+            'fixed_room' => (float) $this->water_rate,
+            'meter' => $this->water_rate * max(0, $usage),
+            default => $this->water_rate * max(0, $usage),
+        };
+    }
+
+    // Helper: Tính tiền mạng Internet Wifi phòng
+    public function calculateInternetAmount(int $occupantsCount = 1): float
+    {
+        return match ($this->internet_type) {
+            'per_person' => $this->internet_rate * max(1, $occupantsCount),
+            'fixed' => (float) $this->internet_rate,
+            'free' => 0.0,
+            default => (float) $this->internet_rate,
+        };
+    }
 
     public function property(): BelongsTo
     {

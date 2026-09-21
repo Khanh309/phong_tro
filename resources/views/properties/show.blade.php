@@ -62,11 +62,20 @@
 
     <div class="col-12 col-md-4">
         <div class="card p-3 h-100">
-            <div class="fw-bold text-dark mb-2"><i class="bi bi-lightning-charge text-warning me-2"></i>Hợp đồng Nhà nước</div>
+            <div class="fw-bold text-dark mb-2"><i class="bi bi-gear-wide-connected text-info me-2"></i>Quy chuẩn Nước & Mạng Wifi</div>
             <div class="small">
-                <div class="py-1 border-bottom">Mã khách hàng EVN: <code>{{ $property->electricity_meter_code ?: 'Chưa nhập' }}</code></div>
-                <div class="py-1 border-bottom">Mã danh bộ Nước: <code>{{ $property->water_meter_code ?: 'Chưa nhập' }}</code></div>
-                <div class="py-1 text-muted">{{ $property->description ?: 'Không có ghi chú thêm.' }}</div>
+                <div class="py-1 border-bottom">
+                    <span class="text-muted">Tiền Nước:</span> 
+                    <b>{{ $property->default_water_type_label }}</b> ({{ number_format($property->default_water_rate ?? 30000, 0, ',', '.') }}đ)
+                </div>
+                <div class="py-1 border-bottom">
+                    <span class="text-muted">Mạng Wifi:</span> 
+                    <b>{{ $property->default_internet_type_label }}</b> ({{ number_format($property->default_internet_rate ?? 100000, 0, ',', '.') }}đ)
+                </div>
+                <div class="py-1">
+                    <span class="text-muted">Mã EVN / Nước:</span> 
+                    <code>{{ $property->electricity_meter_code ?: '---' }}</code> / <code>{{ $property->water_meter_code ?: '---' }}</code>
+                </div>
             </div>
         </div>
     </div>

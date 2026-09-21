@@ -146,6 +146,17 @@
                         <span class="badge bg-info-subtle text-info">Thanh Xuân</span>
                     </div>
                 </button>
+
+                <!-- NÚT 4: KHÁCH THUÊ PHÒNG (TENANT) -->
+                <button type="button" class="demo-btn" onclick="quickLogin('hoang.tran@gmail.com', '123456')">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold text-warning small">🏠 Khách Thuê Phòng (Tenant)</div>
+                            <div class="text-muted" style="font-size: 0.76rem;">Trần Văn Hoàng (P.101 Cầu Giấy) - Vào Cổng Khách Thuê tra cứu & quét mã</div>
+                        </div>
+                        <span class="badge bg-warning-subtle text-warning">Khách Thuê</span>
+                    </div>
+                </button>
             </div>
         </div>
     </div>

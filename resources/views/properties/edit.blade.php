@@ -77,6 +77,39 @@
                         </div>
                     </div>
 
+                    <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">4. Cấu hình Tiền Nước & Tiền Mạng Mặc Định Của Nhà Trọ</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Cách tính tiền nước mặc định <span class="text-danger">*</span></label>
+                            <select name="default_water_type" class="form-select" required>
+                                <option value="meter" {{ old('default_water_type', $property->default_water_type ?? 'meter') == 'meter' ? 'selected' : '' }}>Theo đồng hồ con (m³)</option>
+                                <option value="per_person" {{ old('default_water_type', $property->default_water_type) == 'per_person' ? 'selected' : '' }}>Theo đầu người (người/tháng)</option>
+                                <option value="fixed_room" {{ old('default_water_type', $property->default_water_type) == 'fixed_room' ? 'selected' : '' }}>Khoán cố định theo phòng (phòng/tháng)</option>
+                            </select>
+                            <small class="text-muted">Tùy chọn: Đồng hồ khối, theo đầu người, hoặc khoán phòng</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Đơn giá nước mặc định (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" name="default_water_rate" class="form-control" required min="0" step="1000" value="{{ old('default_water_rate', $property->default_water_rate ?? 30000) }}">
+                            <small class="text-muted">Đơn giá theo m³, theo người, hoặc khoán 1 phòng</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Cách tính tiền mạng Internet Wifi mặc định <span class="text-danger">*</span></label>
+                            <select name="default_internet_type" class="form-select" required>
+                                <option value="fixed" {{ old('default_internet_type', $property->default_internet_type ?? 'fixed') == 'fixed' ? 'selected' : '' }}>Khoán cố định theo phòng (phòng/tháng)</option>
+                                <option value="per_person" {{ old('default_internet_type', $property->default_internet_type) == 'per_person' ? 'selected' : '' }}>Theo đầu người (người/tháng)</option>
+                                <option value="free" {{ old('default_internet_type', $property->default_internet_type) == 'free' ? 'selected' : '' }}>Miễn phí tiền mạng (0đ)</option>
+                            </select>
+                            <small class="text-muted">Tùy chọn: Khoán theo phòng, theo đầu người, hoặc miễn phí</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Đơn giá tiền mạng mặc định (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" name="default_internet_rate" class="form-control" required min="0" step="1000" value="{{ old('default_internet_rate', $property->default_internet_rate ?? 100000) }}">
+                            <small class="text-muted">Đơn giá mạng theo phòng hoặc theo từng người</small>
+                        </div>
+                    </div>
+
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('properties.index') }}" class="btn btn-outline-secondary">Hủy bỏ</a>
                         <button type="submit" class="btn btn-primary px-4 fw-bold">Cập Nhật Thông Tin</button>

@@ -10,6 +10,9 @@ class AuthController extends Controller
     public function showLoginForm()
     {
         if (Auth::check()) {
+            if (Auth::user()->isTenant()) {
+                return redirect()->route('portal.index');
+            }
             return redirect()->route('dashboard');
         }
 
@@ -29,6 +32,15 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             $user = Auth::user();
+
+            if ($user->isTenant()) {
+                if ($user->tenant_id) {
+                    session(['tenant_id' => $user->tenant_id]);
+                }
+                return redirect()->route('portal.index')
+                    ->with('success', "Xin chào {$user->name}! Bạn đã đăng nhập vào Cổng Khách Thuê thành công.");
+            }
+
             $roleLabel = $user->isAdmin() ? 'Chủ Nhà Trọ (Toàn quyền)' : 'Quản Lý Cơ Sở';
 
             return redirect()->intended(route('dashboard'))
@@ -42,6 +54,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        $isTenant = Auth::check() && Auth::user()->isTenant();
         Auth::logout();
 
         $request->session()->invalidate();

@@ -54,6 +54,7 @@
                     <th>Quê Quán</th>
                     <th>Biển Số Xe</th>
                     <th>Tạm Trú</th>
+                    <th>Tài Khoản App</th>
                     <th>Thao tác</th>
                 </tr>
             </thead>
@@ -99,8 +100,19 @@
                             </span>
                         </td>
                         <td>
+                            @if($tenant->user)
+                                <span class="badge bg-success-subtle text-success" title="{{ $tenant->user->email }}">
+                                    <i class="bi bi-person-check-fill me-1"></i>Có TK
+                                </span>
+                            @else
+                                <span class="badge bg-light text-muted border">
+                                    <i class="bi bi-person-x me-1"></i>Chưa có
+                                </span>
+                            @endif
+                        </td>
+                        <td>
                             <div class="d-flex gap-1">
-                                <a href="{{ route('tenants.show', $tenant->id) }}" class="btn btn-sm btn-outline-primary" title="Xem hồ sơ">
+                                <a href="{{ route('tenants.show', $tenant->id) }}" class="btn btn-sm btn-outline-primary" title="Xem hồ sơ & Quản lý TK">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 <a href="{{ route('tenants.edit', $tenant->id) }}" class="btn btn-sm btn-outline-secondary" title="Sửa">
@@ -111,7 +123,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center py-4 text-muted">Không tìm thấy khách thuê nào.</td>
+                        <td colspan="9" class="text-center py-4 text-muted">Không tìm thấy khách thuê nào.</td>
                     </tr>
                 @endforelse
             </tbody>

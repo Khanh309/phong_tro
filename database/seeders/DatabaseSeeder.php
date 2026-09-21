@@ -39,6 +39,10 @@ class DatabaseSeeder extends Seeder
             'bank_account_holder' => 'NGUYEN VAN CHU',
             'electricity_meter_code' => 'EVN-HN-CG-10293',
             'water_meter_code' => 'CNHN-CG-88219',
+            'default_water_type' => 'meter',
+            'default_water_rate' => 30000,
+            'default_internet_type' => 'fixed',
+            'default_internet_rate' => 100000,
             'description' => 'Nhà trọ 5 tầng, có thang máy, khóa cổng vân tay, camera an ninh 24/7.',
         ]);
 
@@ -53,6 +57,10 @@ class DatabaseSeeder extends Seeder
             'bank_account_holder' => 'NGUYEN VAN CHU',
             'electricity_meter_code' => 'EVN-HN-TX-55120',
             'water_meter_code' => 'CNHN-TX-44102',
+            'default_water_type' => 'per_person',
+            'default_water_rate' => 100000,
+            'default_internet_type' => 'per_person',
+            'default_internet_rate' => 50000,
             'description' => 'Căn hộ mini 4 tầng gần Ngã Tư Sở, giờ giấc tự do, sân để xe rộng.',
         ]);
 
@@ -82,14 +90,14 @@ class DatabaseSeeder extends Seeder
 
         // 3. TẠO PHÒNG TRỌ CHO NHÀ CẦU GIẤY (8 phòng)
         $roomsData1 = [
-            ['room_number' => '101', 'floor' => 1, 'price' => 3200000, 'area' => 22.0, 'elec_meter' => 'EM-CG-101', 'elec_init' => 1250, 'water_meter' => 'WM-CG-101', 'water_init' => 140, 'water_type' => 'meter', 'water_rate' => 30000, 'status' => 'occupied'],
-            ['room_number' => '102', 'floor' => 1, 'price' => 3000000, 'area' => 20.0, 'elec_meter' => 'EM-CG-102', 'elec_init' => 980, 'water_meter' => 'WM-CG-102', 'water_init' => 110, 'water_type' => 'meter', 'water_rate' => 30000, 'status' => 'occupied'],
-            ['room_number' => '201', 'floor' => 2, 'price' => 3500000, 'area' => 25.0, 'elec_meter' => 'EM-CG-201', 'elec_init' => 2100, 'water_meter' => 'WM-CG-201', 'water_init' => 220, 'water_type' => 'meter', 'water_rate' => 30000, 'status' => 'occupied'],
-            ['room_number' => '202', 'floor' => 2, 'price' => 3500000, 'area' => 25.0, 'elec_meter' => 'EM-CG-202', 'elec_init' => 1840, 'water_meter' => 'WM-CG-202', 'water_init' => 195, 'water_type' => 'meter', 'water_rate' => 30000, 'status' => 'occupied'],
-            ['room_number' => '301', 'floor' => 3, 'price' => 3600000, 'area' => 26.0, 'elec_meter' => 'EM-CG-301', 'elec_init' => 750, 'water_meter' => 'WM-CG-301', 'water_init' => 80, 'water_type' => 'meter', 'water_rate' => 30000, 'status' => 'occupied'],
-            ['room_number' => '302', 'floor' => 3, 'price' => 3600000, 'area' => 26.0, 'elec_meter' => 'EM-CG-302', 'elec_init' => 620, 'water_meter' => 'WM-CG-302', 'water_init' => 65, 'water_type' => 'meter', 'water_rate' => 30000, 'status' => 'available'],
-            ['room_number' => '401', 'floor' => 4, 'price' => 3400000, 'area' => 25.0, 'elec_meter' => 'EM-CG-401', 'elec_init' => 1100, 'water_meter' => 'WM-CG-401', 'water_init' => 120, 'water_type' => 'per_person', 'water_rate' => 100000, 'status' => 'available'],
-            ['room_number' => '501', 'floor' => 5, 'price' => 3800000, 'area' => 30.0, 'elec_meter' => 'EM-CG-501', 'elec_init' => 450, 'water_meter' => 'WM-CG-501', 'water_init' => 50, 'water_type' => 'meter', 'water_rate' => 30000, 'status' => 'maintenance'],
+            ['room_number' => '101', 'floor' => 1, 'price' => 3200000, 'area' => 22.0, 'elec_meter' => 'EM-CG-101', 'elec_init' => 1250, 'water_meter' => 'WM-CG-101', 'water_init' => 140, 'water_type' => 'meter', 'water_rate' => 30000, 'internet_type' => 'fixed', 'internet_rate' => 100000, 'status' => 'occupied'],
+            ['room_number' => '102', 'floor' => 1, 'price' => 3000000, 'area' => 20.0, 'elec_meter' => 'EM-CG-102', 'elec_init' => 980, 'water_meter' => 'WM-CG-102', 'water_init' => 110, 'water_type' => 'meter', 'water_rate' => 30000, 'internet_type' => 'fixed', 'internet_rate' => 100000, 'status' => 'occupied'],
+            ['room_number' => '201', 'floor' => 2, 'price' => 3500000, 'area' => 25.0, 'elec_meter' => 'EM-CG-201', 'elec_init' => 2100, 'water_meter' => 'WM-CG-201', 'water_init' => 220, 'water_type' => 'meter', 'water_rate' => 30000, 'internet_type' => 'fixed', 'internet_rate' => 100000, 'status' => 'occupied'],
+            ['room_number' => '202', 'floor' => 2, 'price' => 3500000, 'area' => 25.0, 'elec_meter' => 'EM-CG-202', 'elec_init' => 1840, 'water_meter' => 'WM-CG-202', 'water_init' => 195, 'water_type' => 'meter', 'water_rate' => 30000, 'internet_type' => 'fixed', 'internet_rate' => 100000, 'status' => 'occupied'],
+            ['room_number' => '301', 'floor' => 3, 'price' => 3600000, 'area' => 26.0, 'elec_meter' => 'EM-CG-301', 'elec_init' => 750, 'water_meter' => 'WM-CG-301', 'water_init' => 80, 'water_type' => 'meter', 'water_rate' => 30000, 'internet_type' => 'fixed', 'internet_rate' => 100000, 'status' => 'occupied'],
+            ['room_number' => '302', 'floor' => 3, 'price' => 3600000, 'area' => 26.0, 'elec_meter' => 'EM-CG-302', 'elec_init' => 620, 'water_meter' => 'WM-CG-302', 'water_init' => 65, 'water_type' => 'meter', 'water_rate' => 30000, 'internet_type' => 'fixed', 'internet_rate' => 100000, 'status' => 'available'],
+            ['room_number' => '401', 'floor' => 4, 'price' => 3400000, 'area' => 25.0, 'elec_meter' => 'EM-CG-401', 'elec_init' => 1100, 'water_meter' => 'WM-CG-401', 'water_init' => 120, 'water_type' => 'per_person', 'water_rate' => 100000, 'internet_type' => 'per_person', 'internet_rate' => 50000, 'status' => 'available'],
+            ['room_number' => '501', 'floor' => 5, 'price' => 3800000, 'area' => 30.0, 'elec_meter' => 'EM-CG-501', 'elec_init' => 450, 'water_meter' => 'WM-CG-501', 'water_init' => 50, 'water_type' => 'fixed_room', 'water_rate' => 150000, 'internet_type' => 'free', 'internet_rate' => 0, 'status' => 'maintenance'],
         ];
 
         $createdRooms1 = [];
@@ -109,11 +117,21 @@ class DatabaseSeeder extends Seeder
                 'initial_water' => $r['water_init'],
                 'water_calculation_type' => $r['water_type'],
                 'water_rate' => $r['water_rate'],
+                'internet_type' => $r['internet_type'],
+                'internet_rate' => $r['internet_rate'],
                 'description' => "Phòng {$r['room_number']} có ban công thoáng mát, cửa sổ lớn đón ánh sáng tự nhiên.",
             ]);
 
             // Cấu hình phí dịch vụ phòng
-            RoomFee::create(['room_id' => $room->id, 'fee_name' => 'Tiền mạng Internet Wifi', 'fee_type' => 'fixed', 'unit_price' => 100000, 'quantity' => 1]);
+            if ($r['internet_type'] !== 'free') {
+                RoomFee::create([
+                    'room_id' => $room->id,
+                    'fee_name' => 'Tiền mạng Internet Wifi',
+                    'fee_type' => $r['internet_type'] === 'per_person' ? 'per_person' : 'fixed',
+                    'unit_price' => $r['internet_rate'],
+                    'quantity' => 1,
+                ]);
+            }
             RoomFee::create(['room_id' => $room->id, 'fee_name' => 'Phí vệ sinh & rác thải', 'fee_type' => 'fixed', 'unit_price' => 40000, 'quantity' => 1]);
             RoomFee::create(['room_id' => $room->id, 'fee_name' => 'Phí thang máy & đèn hành lang', 'fee_type' => 'per_person', 'unit_price' => 50000, 'quantity' => 2]);
             RoomFee::create(['room_id' => $room->id, 'fee_name' => 'Phí gửi xe máy', 'fee_type' => 'per_unit', 'unit_price' => 100000, 'quantity' => 2]);
@@ -129,10 +147,10 @@ class DatabaseSeeder extends Seeder
 
         // 4. TẠO PHÒNG CHO NHÀ THANH XUÂN (4 phòng)
         $roomsData2 = [
-            ['room_number' => '101', 'floor' => 1, 'price' => 2800000, 'area' => 18.0, 'elec_meter' => 'EM-TX-101', 'elec_init' => 890, 'water_meter' => 'WM-TX-101', 'water_init' => 90, 'status' => 'occupied'],
-            ['room_number' => '201', 'floor' => 2, 'price' => 3200000, 'area' => 22.0, 'elec_meter' => 'EM-TX-201', 'elec_init' => 1430, 'water_meter' => 'WM-TX-201', 'water_init' => 150, 'status' => 'occupied'],
-            ['room_number' => '301', 'floor' => 3, 'price' => 3200000, 'area' => 22.0, 'elec_meter' => 'EM-TX-301', 'elec_init' => 600, 'water_meter' => 'WM-TX-301', 'water_init' => 70, 'status' => 'available'],
-            ['room_number' => '401', 'floor' => 4, 'price' => 3000000, 'area' => 22.0, 'elec_meter' => 'EM-TX-401', 'elec_init' => 310, 'water_meter' => 'WM-TX-401', 'water_init' => 40, 'status' => 'available'],
+            ['room_number' => '101', 'floor' => 1, 'price' => 2800000, 'area' => 18.0, 'elec_meter' => 'EM-TX-101', 'elec_init' => 890, 'water_meter' => 'WM-TX-101', 'water_init' => 90, 'water_type' => 'per_person', 'water_rate' => 100000, 'internet_type' => 'per_person', 'internet_rate' => 50000, 'status' => 'occupied'],
+            ['room_number' => '201', 'floor' => 2, 'price' => 3200000, 'area' => 22.0, 'elec_meter' => 'EM-TX-201', 'elec_init' => 1430, 'water_meter' => 'WM-TX-201', 'water_init' => 150, 'water_type' => 'per_person', 'water_rate' => 100000, 'internet_type' => 'per_person', 'internet_rate' => 50000, 'status' => 'occupied'],
+            ['room_number' => '301', 'floor' => 3, 'price' => 3200000, 'area' => 22.0, 'elec_meter' => 'EM-TX-301', 'elec_init' => 600, 'water_meter' => 'WM-TX-301', 'water_init' => 70, 'water_type' => 'per_person', 'water_rate' => 100000, 'internet_type' => 'per_person', 'internet_rate' => 50000, 'status' => 'available'],
+            ['room_number' => '401', 'floor' => 4, 'price' => 3000000, 'area' => 22.0, 'elec_meter' => 'EM-TX-401', 'elec_init' => 310, 'water_meter' => 'WM-TX-401', 'water_init' => 40, 'water_type' => 'fixed_room', 'water_rate' => 120000, 'internet_type' => 'fixed', 'internet_rate' => 80000, 'status' => 'available'],
         ];
 
         $createdRooms2 = [];
@@ -150,12 +168,22 @@ class DatabaseSeeder extends Seeder
                 'electricity_rate' => 3500,
                 'water_meter_number' => $r['water_meter'],
                 'initial_water' => $r['water_init'],
-                'water_calculation_type' => 'meter',
-                'water_rate' => 30000,
+                'water_calculation_type' => $r['water_type'],
+                'water_rate' => $r['water_rate'],
+                'internet_type' => $r['internet_type'],
+                'internet_rate' => $r['internet_rate'],
                 'description' => "Căn hộ mini {$r['room_number']} khép kín, kệ bếp chậu rửa riêng.",
             ]);
 
-            RoomFee::create(['room_id' => $room->id, 'fee_name' => 'Wifi tốc độ cao', 'fee_type' => 'fixed', 'unit_price' => 100000, 'quantity' => 1]);
+            if ($r['internet_type'] !== 'free') {
+                RoomFee::create([
+                    'room_id' => $room->id,
+                    'fee_name' => 'Tiền mạng Internet Wifi',
+                    'fee_type' => $r['internet_type'] === 'per_person' ? 'per_person' : 'fixed',
+                    'unit_price' => $r['internet_rate'],
+                    'quantity' => 1,
+                ]);
+            }
             RoomFee::create(['room_id' => $room->id, 'fee_name' => 'Tiền rác & Vệ sinh chung', 'fee_type' => 'fixed', 'unit_price' => 50000, 'quantity' => 1]);
             RoomFee::create(['room_id' => $room->id, 'fee_name' => 'Gửi xe máy tầng 1', 'fee_type' => 'per_unit', 'unit_price' => 80000, 'quantity' => 1]);
 
@@ -179,6 +207,15 @@ class DatabaseSeeder extends Seeder
             'vehicle_plate' => '18B2-678.90',
             'temporary_residence_status' => 'registered',
             'notes' => 'Nhân viên văn phòng, đóng tiền đúng hẹn.',
+        ]);
+
+        // Cấp tài khoản đăng nhập cho khách thuê Trần Văn Hoàng (Demo đăng nhập Portal)
+        User::create([
+            'name' => $t1->name,
+            'email' => $t1->email,
+            'password' => Hash::make('123456'),
+            'role' => 'tenant',
+            'tenant_id' => $t1->id,
         ]);
 
         $t2 = Tenant::create([

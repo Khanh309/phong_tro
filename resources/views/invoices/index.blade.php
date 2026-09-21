@@ -200,15 +200,25 @@
                             <div class="fw-bold text-info-emphasis fs-6">
                                 {{ number_format($inv->water_total, 0, ',', '.') }}đ
                             </div>
-                            @if($inv->room->water_calculation_type === 'per_person')
-                                <div class="small text-muted" style="font-size: 0.78rem;">
-                                    Tính theo người ở:
+                            @php
+                                $wType = $inv->water_calculation_type ?? $inv->room->water_calculation_type;
+                            @endphp
+                            @if($wType === 'per_person')
+                                <div class="small text-muted" style="font-size: 0.75rem;">
+                                    <span class="badge bg-info-subtle text-info border">👥 Theo người</span>
                                 </div>
-                                <div class="small text-dark fw-semibold" style="font-size: 0.75rem;">
+                                <div class="small text-dark fw-semibold mt-1" style="font-size: 0.75rem;">
                                     <b>{{ $inv->water_usage }} người</b> × {{ number_format($inv->water_rate, 0, ',', '.') }}đ
                                 </div>
+                            @elseif($wType === 'fixed_room')
+                                <div class="small text-muted" style="font-size: 0.75rem;">
+                                    <span class="badge bg-primary-subtle text-primary border">🏠 Khoán phòng</span>
+                                </div>
+                                <div class="small text-muted mt-1" style="font-size: 0.75rem;">
+                                    Cố định 1 phòng
+                                </div>
                             @else
-                                <div class="small text-muted font-monospace" style="font-size: 0.78rem;">
+                                <div class="small text-muted font-monospace" style="font-size: 0.75rem;">
                                     {{ $inv->water_old }} → {{ $inv->water_new }}
                                 </div>
                                 <div class="small text-dark fw-semibold" style="font-size: 0.75rem;">
@@ -236,6 +246,9 @@
                                                     🏷️
                                                 @endif
                                                 {{ $f['name'] }}:
+                                                @if(!empty($f['calc_desc']))
+                                                    <span class="text-muted" style="font-size: 0.7rem;">({{ $f['calc_desc'] }})</span>
+                                                @endif
                                             </span>
                                             <b class="text-dark font-monospace">{{ number_format($f['amount'], 0, ',', '.') }}đ</b>
                                         </div>

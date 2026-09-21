@@ -21,8 +21,37 @@ class Property extends Model
         'bank_account_holder',
         'electricity_meter_code',
         'water_meter_code',
+        'default_water_type',
+        'default_water_rate',
+        'default_internet_type',
+        'default_internet_rate',
         'description',
     ];
+
+    protected $casts = [
+        'default_water_rate' => 'decimal:0',
+        'default_internet_rate' => 'decimal:0',
+    ];
+
+    public function getDefaultWaterTypeLabelAttribute(): string
+    {
+        return match ($this->default_water_type) {
+            'meter' => 'Theo đồng hồ (m³)',
+            'per_person' => 'Theo đầu người',
+            'fixed_room' => 'Khoán theo phòng',
+            default => 'Theo đồng hồ',
+        };
+    }
+
+    public function getDefaultInternetTypeLabelAttribute(): string
+    {
+        return match ($this->default_internet_type) {
+            'fixed' => 'Khoán theo phòng',
+            'per_person' => 'Theo đầu người',
+            'free' => 'Miễn phí',
+            default => 'Khoán theo phòng',
+        };
+    }
 
     public function rooms(): HasMany
     {

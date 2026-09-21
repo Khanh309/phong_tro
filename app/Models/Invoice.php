@@ -29,6 +29,7 @@ class Invoice extends Model
         'water_usage',
         'water_rate',
         'water_total',
+        'water_calculation_type',
         'room_price',
         'fees_detail',
         'other_fees',

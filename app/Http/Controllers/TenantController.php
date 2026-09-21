@@ -13,7 +13,7 @@ class TenantController extends Controller
         $search = $request->query('search');
         $residence = $request->query('residence');
 
-        $query = Tenant::with(['currentContract.room.property', 'contracts']);
+        $query = Tenant::with(['currentContract.room.property', 'contracts', 'user']);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -62,7 +62,7 @@ class TenantController extends Controller
 
     public function show(Tenant $tenant)
     {
-        $tenant->load(['contracts.room.property', 'contracts.members']);
+        $tenant->load(['contracts.room.property', 'contracts.members', 'user']);
         return view('tenants.show', compact('tenant'));
     }
 
@@ -119,5 +119,66 @@ class TenantController extends Controller
         $tenants = $query->get();
 
         return view('tenants.police_report', compact('tenants', 'properties', 'propertyId'));
+    }
+
+    // Cấp tài khoản đăng nhập cho khách thuê (Chỉ Admin)
+    public function createAccount(Request $request, Tenant $tenant)
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Chỉ Admin mới có quyền cấp tài khoản đăng nhập cho khách thuê.');
+        }
+
+        $validated = $request->validate([
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+        ]);
+
+        \App\Models\User::create([
+            'name' => $tenant->name,
+            'email' => $validated['email'],
+            'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
+            'role' => 'tenant',
+            'tenant_id' => $tenant->id,
+        ]);
+
+        if (!$tenant->email) {
+            $tenant->update(['email' => $validated['email']]);
+        }
+
+        return back()->with('success', "Đã cấp tài khoản đăng nhập thành công cho khách thuê {$tenant->name} ({$validated['email']})!");
+    }
+
+    // Đổi mật khẩu tài khoản khách thuê (Chỉ Admin)
+    public function resetPassword(Request $request, Tenant $tenant)
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Chỉ Admin mới có quyền đổi mật khẩu tài khoản khách thuê.');
+        }
+
+        $user = \App\Models\User::where('tenant_id', $tenant->id)->firstOrFail();
+        $validated = $request->validate([
+            'password' => 'required|string|min:6',
+        ]);
+
+        $user->update([
+            'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
+        ]);
+
+        return back()->with('success', "Đã đổi mật khẩu thành công cho tài khoản {$user->email}!");
+    }
+
+    // Hủy tài khoản đăng nhập của khách (Chỉ Admin)
+    public function deleteAccount(Tenant $tenant)
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Chỉ Admin mới có quyền hủy tài khoản đăng nhập của khách thuê.');
+        }
+
+        $user = \App\Models\User::where('tenant_id', $tenant->id)->first();
+        if ($user) {
+            $user->delete();
+        }
+
+        return back()->with('success', "Đã hủy tài khoản đăng nhập của khách thuê {$tenant->name}!");
     }
 }

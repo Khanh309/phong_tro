@@ -43,8 +43,17 @@ class PropertyController extends Controller
             'bank_account_holder' => 'nullable|string|max:100',
             'electricity_meter_code' => 'nullable|string|max:50',
             'water_meter_code' => 'nullable|string|max:50',
+            'default_water_type' => 'nullable|in:meter,per_person,fixed_room',
+            'default_water_rate' => 'nullable|numeric|min:0',
+            'default_internet_type' => 'nullable|in:fixed,per_person,free',
+            'default_internet_rate' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
         ]);
+
+        $validated['default_water_type'] = $validated['default_water_type'] ?? 'meter';
+        $validated['default_water_rate'] = $validated['default_water_rate'] ?? 30000;
+        $validated['default_internet_type'] = $validated['default_internet_type'] ?? 'fixed';
+        $validated['default_internet_rate'] = $validated['default_internet_rate'] ?? 100000;
 
         $property = Property::create($validated);
 
@@ -85,8 +94,17 @@ class PropertyController extends Controller
             'bank_account_holder' => 'nullable|string|max:100',
             'electricity_meter_code' => 'nullable|string|max:50',
             'water_meter_code' => 'nullable|string|max:50',
+            'default_water_type' => 'nullable|in:meter,per_person,fixed_room',
+            'default_water_rate' => 'nullable|numeric|min:0',
+            'default_internet_type' => 'nullable|in:fixed,per_person,free',
+            'default_internet_rate' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
         ]);
+
+        $validated['default_water_type'] = $validated['default_water_type'] ?? ($property->default_water_type ?? 'meter');
+        $validated['default_water_rate'] = $validated['default_water_rate'] ?? ($property->default_water_rate ?? 30000);
+        $validated['default_internet_type'] = $validated['default_internet_type'] ?? ($property->default_internet_type ?? 'fixed');
+        $validated['default_internet_rate'] = $validated['default_internet_rate'] ?? ($property->default_internet_rate ?? 100000);
 
         $property->update($validated);
 

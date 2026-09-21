@@ -56,7 +56,9 @@ class RoomController extends Controller
             $properties = Property::all();
             $selectedPropertyId = $request->query('property_id');
         }
-        return view('rooms.create', compact('properties', 'selectedPropertyId'));
+
+        $selectedProperty = $selectedPropertyId ? Property::find($selectedPropertyId) : $properties->first();
+        return view('rooms.create', compact('properties', 'selectedPropertyId', 'selectedProperty'));
     }
 
     public function store(Request $request)
@@ -76,26 +78,33 @@ class RoomController extends Controller
             'initial_water' => 'required|numeric|min:0',
             'water_calculation_type' => 'required|in:meter,per_person,fixed_room',
             'water_rate' => 'required|numeric|min:0',
+            'internet_type' => 'nullable|in:fixed,per_person,free',
+            'internet_rate' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
         ]);
 
+        $property = Property::find($validated['property_id']);
+        $validated['internet_type'] = $validated['internet_type'] ?? ($property?->default_internet_type ?? 'fixed');
+        $validated['internet_rate'] = $validated['internet_rate'] ?? ($property?->default_internet_rate ?? 100000);
+
         $room = Room::create($validated);
 
-        // Tạo các phí mặc định (Wifi, rác)
-        RoomFee::create([
-            'room_id' => $room->id,
-            'fee_name' => 'Tiền mạng Internet Wifi',
-            'fee_type' => 'fixed',
-            'unit_price' => 100000,
-            'quantity' => 1,
-        ]);
-        RoomFee::create([
-            'room_id' => $room->id,
-            'fee_name' => 'Tiền rác & Vệ sinh',
-            'fee_type' => 'fixed',
-            'unit_price' => 40000,
-            'quantity' => 1,
-        ]);
+        // Tạo/cập nhật phí mạng theo cấu hình (fixed, per_person, free)
+        if ($validated['internet_type'] !== 'free') {
+            RoomFee::updateOrCreate(
+                ['room_id' => $room->id, 'fee_name' => 'Tiền mạng Internet Wifi'],
+                [
+                    'fee_type' => $validated['internet_type'] === 'per_person' ? 'per_person' : 'fixed',
+                    'unit_price' => $validated['internet_rate'],
+                    'quantity' => 1,
+                ]
+            );
+        }
+
+        RoomFee::firstOrCreate(
+            ['room_id' => $room->id, 'fee_name' => 'Tiền rác & Vệ sinh'],
+            ['fee_type' => 'fixed', 'unit_price' => 40000, 'quantity' => 1]
+        );
 
         return redirect()->route('rooms.show', $room->id)->with('success', 'Tạo phòng trọ mới thành công!');
     }
@@ -138,10 +147,29 @@ class RoomController extends Controller
             'initial_water' => 'required|numeric|min:0',
             'water_calculation_type' => 'required|in:meter,per_person,fixed_room',
             'water_rate' => 'required|numeric|min:0',
+            'internet_type' => 'nullable|in:fixed,per_person,free',
+            'internet_rate' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
         ]);
 
+        $validated['internet_type'] = $validated['internet_type'] ?? ($room->internet_type ?? 'fixed');
+        $validated['internet_rate'] = $validated['internet_rate'] ?? ($room->internet_rate ?? 100000);
+
         $room->update($validated);
+
+        // Đồng bộ phí mạng Wifi
+        if ($validated['internet_type'] !== 'free') {
+            RoomFee::updateOrCreate(
+                ['room_id' => $room->id, 'fee_name' => 'Tiền mạng Internet Wifi'],
+                [
+                    'fee_type' => $validated['internet_type'] === 'per_person' ? 'per_person' : 'fixed',
+                    'unit_price' => $validated['internet_rate'],
+                    'quantity' => 1,
+                ]
+            );
+        } else {
+            RoomFee::where('room_id', $room->id)->where('fee_name', 'like', '%mạng%')->delete();
+        }
 
         return redirect()->route('rooms.show', $room->id)->with('success', 'Cập nhật thông tin phòng thành công!');
     }

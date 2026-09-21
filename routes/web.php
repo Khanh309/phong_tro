@@ -29,7 +29,7 @@ Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 // ==========================================
 // 2. KHU VỰC QUẢN TRỊ (YÊU CẦU ĐĂNG NHẬP: AUTH)
 // ==========================================
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'role.staff'])->group(function () {
 
     // DASHBOARD & TỔNG QUAN
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -45,6 +45,9 @@ Route::middleware(['auth'])->group(function () {
 
     // KHÁCH THUÊ & KHAI BÁO TẠM TRÚ
     Route::get('tenants/police-report', [TenantController::class, 'policeRegistration'])->name('tenants.police_report');
+    Route::post('tenants/{tenant}/account', [TenantController::class, 'createAccount'])->name('tenants.account.create');
+    Route::post('tenants/{tenant}/account/reset-password', [TenantController::class, 'resetPassword'])->name('tenants.account.reset_password');
+    Route::delete('tenants/{tenant}/account', [TenantController::class, 'deleteAccount'])->name('tenants.account.destroy');
     Route::resource('tenants', TenantController::class);
 
     // HỢP ĐỒNG & QUY TRÌNH TRẢ PHÒNG (CHECK-OUT)

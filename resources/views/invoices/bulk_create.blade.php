@@ -76,20 +76,28 @@
                         <tr>
                             <th style="width: 140px;">Phòng & Khách</th>
                             <th>Tiền Phòng</th>
-                            <th style="width: 120px;">Số Điện Cũ</th>
-                            <th style="width: 140px;">Số Điện Mới (kWh)</th>
+                            <th style="width: 110px;">Điện Cũ</th>
+                            <th style="width: 130px;">Điện Mới (kWh)</th>
                             <th style="width: 100px;">Đơn giá điện</th>
-                            <th style="width: 110px;">Số Nước Cũ</th>
-                            <th style="width: 130px;">Số Nước Mới</th>
-                            <th style="width: 120px;">Phí dịch vụ phòng</th>
+                            <th style="min-width: 200px;">💧 Tiền Nước (Đồng hồ / Người / Phòng)</th>
+                            <th style="min-width: 180px;">🌐 Mạng Wifi & Phí Dịch Vụ</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($rooms as $room)
+                            @php
+                                $tenants = $room->total_occupants_count ?: 1;
+                                $netFee = $room->calculateInternetAmount($tenants);
+                            @endphp
                             <tr>
                                 <td>
                                     <div class="fw-bold text-primary fs-6">Phòng {{ $room->room_number }}</div>
-                                    <div class="text-muted small text-truncate" style="max-width: 130px;">{{ $room->currentContract->tenant->name ?? '---' }}</div>
+                                    <div class="text-muted small text-truncate" style="max-width: 130px;">
+                                        {{ $room->currentContract->tenant->name ?? '---' }}
+                                    </div>
+                                    <span class="badge bg-light text-dark border" style="font-size: 0.7rem;">
+                                        👥 {{ $tenants }} người ở
+                                    </span>
                                 </td>
                                 <td>
                                     <input type="number" name="rooms[{{ $room->id }}][room_price]" class="form-control form-control-sm" value="{{ $room->currentContract->rental_price ?? $room->price }}">
@@ -104,14 +112,62 @@
                                     <input type="number" name="rooms[{{ $room->id }}][electricity_rate]" class="form-control form-control-sm" value="{{ $room->electricity_rate }}">
                                 </td>
                                 <td>
-                                    <input type="number" step="0.1" name="rooms[{{ $room->id }}][water_old]" class="form-control form-control-sm bg-light" readonly value="{{ $room->old_water }}">
+                                    @if($room->water_calculation_type === 'per_person')
+                                        <div class="p-2 rounded bg-info-subtle border border-info-subtle">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="badge bg-info text-dark">👥 Tính theo người</span>
+                                                <span class="fw-bold text-info-emphasis">{{ number_format($tenants * $room->water_rate, 0, ',', '.') }}đ</span>
+                                            </div>
+                                            <small class="text-dark d-block">
+                                                <b>{{ $tenants }} người</b> × {{ number_format($room->water_rate, 0, ',', '.') }}đ/người
+                                            </small>
+                                            <input type="hidden" name="rooms[{{ $room->id }}][water_rate]" value="{{ $room->water_rate }}">
+                                        </div>
+                                    @elseif($room->water_calculation_type === 'fixed_room')
+                                        <div class="p-2 rounded bg-primary-subtle border border-primary-subtle">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="badge bg-primary">🏠 Khoán theo phòng</span>
+                                                <span class="fw-bold text-primary">{{ number_format($room->water_rate, 0, ',', '.') }}đ</span>
+                                            </div>
+                                            <small class="text-muted d-block">Cố định 1 phòng</small>
+                                            <input type="hidden" name="rooms[{{ $room->id }}][water_rate]" value="{{ $room->water_rate }}">
+                                        </div>
+                                    @else
+                                        <!-- Theo đồng hồ con -->
+                                        <div class="d-flex gap-1 align-items-center">
+                                            <div style="width: 50%;">
+                                                <small class="text-muted d-block" style="font-size: 0.72rem;">Số cũ</small>
+                                                <input type="number" step="0.1" name="rooms[{{ $room->id }}][water_old]" class="form-control form-control-sm bg-light" readonly value="{{ $room->old_water }}">
+                                            </div>
+                                            <div style="width: 50%;">
+                                                <small class="text-muted d-block" style="font-size: 0.72rem;">Số mới</small>
+                                                <input type="number" step="0.1" min="{{ $room->old_water }}" name="rooms[{{ $room->id }}][water_new]" class="form-control form-control-sm fw-bold border-info" placeholder="Số mới..." value="{{ $room->old_water > 0 ? ($room->old_water + rand(4, 9)) : 5 }}">
+                                            </div>
+                                            <input type="hidden" name="rooms[{{ $room->id }}][water_rate]" value="{{ $room->water_rate }}">
+                                        </div>
+                                        <small class="text-muted mt-1 d-block" style="font-size: 0.72rem;">Đồng hồ m³: {{ number_format($room->water_rate, 0, ',', '.') }}đ/m³</small>
+                                    @endif
                                 </td>
                                 <td>
-                                    <input type="number" step="0.1" min="{{ $room->old_water }}" name="rooms[{{ $room->id }}][water_new]" class="form-control form-control-sm fw-bold border-info" placeholder="Số nước mới..." value="{{ $room->old_water > 0 ? ($room->old_water + rand(4, 9)) : 5 }}">
-                                    <input type="hidden" name="rooms[{{ $room->id }}][water_rate]" value="{{ $room->water_rate }}">
-                                </td>
-                                <td>
-                                    <span class="badge bg-light text-dark">{{ $room->fees->count() }} khoản phí</span>
+                                    <div class="small">
+                                        @if($room->internet_type === 'free')
+                                            <span class="badge bg-success-subtle text-success mb-1">📶 Mạng: Miễn phí</span>
+                                        @elseif($room->internet_type === 'per_person')
+                                            <span class="badge bg-primary-subtle text-primary mb-1">
+                                                📶 Mạng: {{ number_format($netFee, 0, ',', '.') }}đ ({{ $tenants }} người)
+                                            </span>
+                                        @else
+                                            <span class="badge bg-primary-subtle text-primary mb-1">
+                                                📶 Mạng: {{ number_format($room->internet_rate ?? 100000, 0, ',', '.') }}đ/phòng
+                                            </span>
+                                        @endif
+
+                                        @foreach($room->fees->where('fee_name', '!=', 'Tiền mạng Internet Wifi') as $f)
+                                            <div class="text-muted text-truncate" style="font-size: 0.72rem;">
+                                                • {{ $f->fee_name }}: {{ number_format($f->calculateTotal($tenants), 0, ',', '.') }}đ
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

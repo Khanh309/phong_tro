@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'role',
         'property_id',
+        'tenant_id',
     ];
 
     /**
@@ -50,8 +51,23 @@ class User extends Authenticatable
         return $this->belongsTo(Property::class);
     }
 
+    public function tenant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function isManager(): bool
+    {
+        return $this->role === 'manager';
+    }
+
+    public function isTenant(): bool
+    {
+        return $this->role === 'tenant';
     }
 }

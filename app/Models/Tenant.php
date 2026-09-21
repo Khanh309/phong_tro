@@ -46,6 +46,16 @@ class Tenant extends Model
         return $this->hasMany(InvoiceFeedback::class);
     }
 
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class);
+    }
+
+    public function getHasAccountAttribute(): bool
+    {
+        return $this->user()->exists();
+    }
+
     public function getResidenceLabelAttribute(): string
     {
         return $this->temporary_residence_status === 'registered' ? 'Đã đăng ký tạm trú' : 'Chưa đăng ký';

@@ -73,9 +73,9 @@
                         <div class="col-md-4">
                             <label class="form-label fw-semibold">Cách tính tiền nước <span class="text-danger">*</span></label>
                             <select name="water_calculation_type" class="form-select" required>
-                                <option value="meter" {{ old('water_calculation_type') == 'meter' ? 'selected' : '' }}>Theo đồng hồ con (m³)</option>
-                                <option value="per_person" {{ old('water_calculation_type') == 'per_person' ? 'selected' : '' }}>Theo đầu người ở (người/tháng)</option>
-                                <option value="fixed_room" {{ old('water_calculation_type') == 'fixed_room' ? 'selected' : '' }}>Khoán cố định theo phòng</option>
+                                <option value="meter" {{ old('water_calculation_type', $selectedProperty->default_water_type ?? 'meter') == 'meter' ? 'selected' : '' }}>Theo đồng hồ con (m³)</option>
+                                <option value="per_person" {{ old('water_calculation_type', $selectedProperty->default_water_type ?? '') == 'per_person' ? 'selected' : '' }}>Theo đầu người ở (người/tháng)</option>
+                                <option value="fixed_room" {{ old('water_calculation_type', $selectedProperty->default_water_type ?? '') == 'fixed_room' ? 'selected' : '' }}>Khoán cố định theo phòng</option>
                             </select>
                         </div>
                         <div class="col-md-4">
@@ -84,7 +84,20 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold">Đơn giá nước (VNĐ) <span class="text-danger">*</span></label>
-                            <input type="number" name="water_rate" class="form-control" required min="0" step="1000" value="{{ old('water_rate', 30000) }}">
+                            <input type="number" name="water_rate" class="form-control" required min="0" step="1000" value="{{ old('water_rate', $selectedProperty->default_water_rate ?? 30000) }}">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Cách tính tiền mạng Wifi <span class="text-danger">*</span></label>
+                            <select name="internet_type" class="form-select" required>
+                                <option value="fixed" {{ old('internet_type', $selectedProperty->default_internet_type ?? 'fixed') == 'fixed' ? 'selected' : '' }}>Khoán cố định theo phòng (phòng/tháng)</option>
+                                <option value="per_person" {{ old('internet_type', $selectedProperty->default_internet_type ?? '') == 'per_person' ? 'selected' : '' }}>Theo đầu người ở (người/tháng)</option>
+                                <option value="free" {{ old('internet_type', $selectedProperty->default_internet_type ?? '') == 'free' ? 'selected' : '' }}>Miễn phí tiền mạng (0đ)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Đơn giá tiền mạng Wifi (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" name="internet_rate" class="form-control" required min="0" step="1000" value="{{ old('internet_rate', $selectedProperty->default_internet_rate ?? 100000) }}">
                         </div>
                         <div class="col-md-12">
                             <label class="form-label fw-semibold">Mô tả thêm về phòng (cửa sổ, ban công, nội thất)</label>

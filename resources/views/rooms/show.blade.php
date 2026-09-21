@@ -64,11 +64,19 @@
                 </div>
                 <div class="d-flex justify-content-between py-2 border-bottom">
                     <span class="text-muted">Cách tính tiền nước:</span>
-                    <span class="badge bg-light text-dark">{{ $room->water_type_name }}</span>
+                    <span class="badge bg-info-subtle text-info">{{ $room->water_type_label }}</span>
                 </div>
-                <div class="d-flex justify-content-between py-2">
+                <div class="d-flex justify-content-between py-2 border-bottom">
                     <span class="text-muted">Đơn giá nước:</span>
                     <span class="fw-bold text-info-emphasis">{{ number_format($room->water_rate, 0, ',', '.') }}đ</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">Cách tính tiền mạng:</span>
+                    <span class="badge bg-primary-subtle text-primary">{{ $room->internet_type_label }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2">
+                    <span class="text-muted">Đơn giá mạng:</span>
+                    <span class="fw-bold text-primary">{{ number_format($room->internet_rate ?? 100000, 0, ',', '.') }}đ</span>
                 </div>
             </div>
         </div>

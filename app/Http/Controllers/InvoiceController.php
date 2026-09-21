@@ -96,26 +96,49 @@ class InvoiceController extends Controller
         ]);
 
         $room = Room::with(['currentContract', 'fees'])->findOrFail($validated['room_id']);
+        $tenantsCount = $room->currentContract ? ($room->currentContract->members()->count() + 1) : 1;
 
         // 1. Tính điện
         $elecUsage = $validated['electricity_new'] - $validated['electricity_old'];
         $elecTotal = $elecUsage * $validated['electricity_rate'];
 
-        // 2. Tính nước
-        $waterUsage = $validated['water_new'] - $validated['water_old'];
-        $waterTotal = $waterUsage * $validated['water_rate'];
+        // 2. Tính nước theo đúng cấu hình của phòng (meter, per_person, fixed_room)
+        $waterCalcType = $room->water_calculation_type ?: 'meter';
+        if ($waterCalcType === 'per_person') {
+            $waterUsage = $tenantsCount;
+            $waterRate = (float) $validated['water_rate'];
+            $waterTotal = $waterUsage * $waterRate;
+            $waterOld = 0;
+            $waterNew = $tenantsCount;
+        } elseif ($waterCalcType === 'fixed_room') {
+            $waterUsage = 1;
+            $waterRate = (float) $validated['water_rate'];
+            $waterTotal = $waterRate;
+            $waterOld = 0;
+            $waterNew = 1;
+        } else {
+            $waterOld = (float) $validated['water_old'];
+            $waterNew = (float) $validated['water_new'];
+            $waterUsage = max(0, $waterNew - $waterOld);
+            $waterRate = (float) $validated['water_rate'];
+            $waterTotal = $waterUsage * $waterRate;
+        }
 
-        // 3. Tính phí dịch vụ theo cấu hình của phòng
-        $tenantsCount = $room->currentContract?->members()->count() + 1;
+        // 3. Tính phí dịch vụ (bao gồm tiền mạng Internet Wifi theo đầu người hoặc theo phòng)
         $feesDetail = [];
         $otherFeesTotal = 0;
 
         foreach ($room->fees as $fee) {
             $feeAmount = $fee->calculateTotal($tenantsCount);
+            $desc = $fee->fee_type === 'per_person' 
+                ? "{$tenantsCount} người × " . number_format($fee->unit_price, 0, ',', '.') . "đ"
+                : "Khoán cố định phòng";
+
             $feesDetail[] = [
                 'name' => $fee->fee_name,
                 'amount' => (int) $feeAmount,
                 'type' => $fee->fee_type,
+                'calc_desc' => $desc,
             ];
             $otherFeesTotal += $feeAmount;
         }
@@ -140,11 +163,12 @@ class InvoiceController extends Controller
                 'electricity_usage' => $elecUsage,
                 'electricity_rate' => $validated['electricity_rate'],
                 'electricity_total' => $elecTotal,
-                'water_old' => $validated['water_old'],
-                'water_new' => $validated['water_new'],
+                'water_old' => $waterOld,
+                'water_new' => $waterNew,
                 'water_usage' => $waterUsage,
-                'water_rate' => $validated['water_rate'],
+                'water_rate' => $waterRate,
                 'water_total' => $waterTotal,
+                'water_calculation_type' => $waterCalcType,
                 'room_price' => $validated['room_price'],
                 'fees_detail' => $feesDetail,
                 'other_fees' => $otherFeesTotal,
@@ -221,23 +245,45 @@ class InvoiceController extends Controller
             $elecRate = (float) ($data['electricity_rate'] ?? $room->electricity_rate);
             $elecTotal = $elecUsage * $elecRate;
 
-            $waterOld = (float) ($data['water_old'] ?? 0);
-            $waterNew = (float) ($data['water_new'] ?? $waterOld);
-            $waterUsage = max(0, $waterNew - $waterOld);
-            $waterRate = (float) ($data['water_rate'] ?? $room->water_rate);
-            $waterTotal = $waterUsage * $waterRate;
-
-            // Tính các phí dịch vụ phòng
+            // 2. Tính nước theo đúng cấu hình của phòng (meter, per_person, fixed_room)
+            $waterCalcType = $room->water_calculation_type ?: 'meter';
             $tenantsCount = $room->currentContract ? ($room->currentContract->members()->count() + 1) : 1;
+
+            if ($waterCalcType === 'per_person') {
+                $waterOld = 0;
+                $waterNew = $tenantsCount;
+                $waterUsage = $tenantsCount;
+                $waterRate = (float) ($data['water_rate'] ?? $room->water_rate);
+                $waterTotal = $waterUsage * $waterRate;
+            } elseif ($waterCalcType === 'fixed_room') {
+                $waterOld = 0;
+                $waterNew = 1;
+                $waterUsage = 1;
+                $waterRate = (float) ($data['water_rate'] ?? $room->water_rate);
+                $waterTotal = $waterRate;
+            } else {
+                $waterOld = (float) ($data['water_old'] ?? 0);
+                $waterNew = (float) ($data['water_new'] ?? $waterOld);
+                $waterUsage = max(0, $waterNew - $waterOld);
+                $waterRate = (float) ($data['water_rate'] ?? $room->water_rate);
+                $waterTotal = $waterUsage * $waterRate;
+            }
+
+            // 3. Tính phí dịch vụ (bao gồm tiền mạng Internet Wifi theo đầu người hoặc theo phòng)
             $feesDetail = [];
             $otherFeesTotal = 0;
 
             foreach ($room->fees as $fee) {
                 $feeAmount = $fee->calculateTotal($tenantsCount);
+                $desc = $fee->fee_type === 'per_person' 
+                    ? "{$tenantsCount} người × " . number_format($fee->unit_price, 0, ',', '.') . "đ"
+                    : "Khoán cố định phòng";
+
                 $feesDetail[] = [
                     'name' => $fee->fee_name,
                     'amount' => (int) $feeAmount,
                     'type' => $fee->fee_type,
+                    'calc_desc' => $desc,
                 ];
                 $otherFeesTotal += $feeAmount;
             }
@@ -267,6 +313,7 @@ class InvoiceController extends Controller
                     'water_usage' => $waterUsage,
                     'water_rate' => $waterRate,
                     'water_total' => $waterTotal,
+                    'water_calculation_type' => $waterCalcType,
                     'room_price' => $roomPrice,
                     'fees_detail' => $feesDetail,
                     'other_fees' => $otherFeesTotal,

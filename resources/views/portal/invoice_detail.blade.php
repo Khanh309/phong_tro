@@ -74,8 +74,23 @@
                         <tr>
                             <td class="fw-bold">3. Tiền nước sinh hoạt</td>
                             <td class="small">
-                                Chỉ số: <b>{{ $invoice->water_old }}</b> → <b>{{ $invoice->water_new }}</b>
-                                <div class="text-muted">Sử dụng: <b>{{ $invoice->water_usage }} số</b> x {{ number_format($invoice->water_rate, 0, ',', '.') }}đ</div>
+                                @php
+                                    $wType = $invoice->water_calculation_type ?? $invoice->room->water_calculation_type;
+                                @endphp
+                                @if($wType === 'per_person')
+                                    <span class="badge bg-info-subtle text-info border">👥 Tính theo đầu người</span>
+                                    <div class="text-dark fw-semibold mt-1">
+                                        <b>{{ $invoice->water_usage }} người</b> × {{ number_format($invoice->water_rate, 0, ',', '.') }}đ/người
+                                    </div>
+                                @elseif($wType === 'fixed_room')
+                                    <span class="badge bg-primary-subtle text-primary border">🏠 Khoán theo phòng</span>
+                                    <div class="text-muted mt-1">
+                                        Cố định 1 phòng: {{ number_format($invoice->water_rate, 0, ',', '.') }}đ
+                                    </div>
+                                @else
+                                    Chỉ số: <b>{{ $invoice->water_old }}</b> → <b>{{ $invoice->water_new }}</b>
+                                    <div class="text-muted">Sử dụng: <b>{{ $invoice->water_usage }} m³</b> × {{ number_format($invoice->water_rate, 0, ',', '.') }}đ/m³</div>
+                                @endif
                             </td>
                             <td class="text-end fw-bold text-info-emphasis">{{ number_format($invoice->water_total, 0, ',', '.') }}đ</td>
                         </tr>
@@ -85,7 +100,9 @@
                             @foreach($invoice->fees_detail as $idx => $fee)
                                 <tr>
                                     <td class="fw-semibold">{{ 4 + $idx }}. {{ $fee['name'] }}</td>
-                                    <td class="text-muted small">Phí dịch vụ phòng</td>
+                                    <td class="text-muted small">
+                                        {{ $fee['calc_desc'] ?? 'Phí dịch vụ phòng' }}
+                                    </td>
                                     <td class="text-end fw-bold">{{ number_format($fee['amount'], 0, ',', '.') }}đ</td>
                                 </tr>
                             @endforeach

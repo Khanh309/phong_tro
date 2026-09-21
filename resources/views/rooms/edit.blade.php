@@ -94,6 +94,19 @@
                             <label class="form-label fw-semibold">Đơn giá nước (VNĐ) <span class="text-danger">*</span></label>
                             <input type="number" name="water_rate" class="form-control" required min="0" step="1000" value="{{ old('water_rate', $room->water_rate) }}">
                         </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Cách tính tiền mạng Wifi <span class="text-danger">*</span></label>
+                            <select name="internet_type" class="form-select" required>
+                                <option value="fixed" {{ old('internet_type', $room->internet_type ?? 'fixed') == 'fixed' ? 'selected' : '' }}>Khoán cố định theo phòng (phòng/tháng)</option>
+                                <option value="per_person" {{ old('internet_type', $room->internet_type) == 'per_person' ? 'selected' : '' }}>Theo đầu người ở (người/tháng)</option>
+                                <option value="free" {{ old('internet_type', $room->internet_type) == 'free' ? 'selected' : '' }}>Miễn phí tiền mạng (0đ)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Đơn giá tiền mạng Wifi (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" name="internet_rate" class="form-control" required min="0" step="1000" value="{{ old('internet_rate', $room->internet_rate ?? 100000) }}">
+                        </div>
                         <div class="col-md-12">
                             <label class="form-label fw-semibold">Mô tả thêm về phòng</label>
                             <textarea name="description" class="form-control" rows="3">{{ old('description', $room->description) }}</textarea>
