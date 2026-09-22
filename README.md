@@ -9,8 +9,8 @@
   <img src="https://img.shields.io/badge/PHP-8.1%20%7C%208.2-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 8.2">
   <img src="https://img.shields.io/badge/Database-SQLite%20%7C%20MySQL-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite/MySQL">
   <img src="https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white" alt="Bootstrap 5">
-  <img src="https://img.shields.io/badge/PHPUnit-42%20Tests%20Passed-brightgreen?style=for-the-badge&logo=phpunit&logoColor=white" alt="42 Tests Passed">
-  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License MIT">
+  <img src="https://img.shields.io/badge/Author-Lê%20Duy%20Khánh-blue?style=for-the-badge&logo=github&logoColor=white" alt="Author Lê Duy Khánh">
+  <img src="https://img.shields.io/badge/Copyright-All%20Rights%20Reserved-red?style=for-the-badge" alt="All Rights Reserved">
 </p>
 
 ---
@@ -42,7 +42,7 @@ Dự án giải quyết toàn diện bài toán quản trị vận hành nhà tr
 - [Hướng Dẫn Cài Đặt & Chạy Dự Án](#-hướng-dẫn-cài-đặt--chạy-dự-án)
 - [Cấu Trúc Thư Mục Dự Án](#-cấu-trúc-thư-mục-dự-án)
 - [Kiểm Thử Tự Động (PHPUnit Suite)](#-kiểm-thử-tự-động-phpunit-suite)
-- [Giấy Phép](#-giấy-phép)
+- [Bản Quyền & Tác Giả](#-bản-quyền--tác-giả-copyright)
 
 ---
 
@@ -325,12 +325,17 @@ OK (42 tests, 164 assertions)
 
 ---
 
-## 📄 Giấy Phép
+## 🛡️ Bản Quyền & Tác Giả (Copyright)
 
-Dự án được phát hành dưới giấy phép mã nguồn mở **[MIT License](LICENSE)**. Tự do sao chép, tùy biến và triển khai cho các chuỗi phòng trọ và chung cư mini thực tế.
+- **Tác giả & Nhà phát triển**: **Lê Duy Khánh** ([@Khanh309](https://github.com/Khanh309))
+- **Bản quyền**: © 2026 **Lê Duy Khánh**. Toàn quyền bảo lưu (**All Rights Reserved**).
+- **Quy định bản quyền & Nghiêm cấm sao chép**:
+  - Toàn bộ mã nguồn, kiến trúc hệ thống, cơ sở dữ liệu và giao diện của dự án là **tài sản trí tuệ độc quyền của Lê Duy Khánh**.
+  - **NGHIÊM CẤM** bất kỳ cá nhân, tổ chức nào sao chép, trích xuất, chỉnh sửa, tái phân phối hoặc thương mại hóa mã nguồn dự án dưới bất kỳ hình thức nào khi chưa có sự cho phép bằng văn bản từ tác giả **Lê Duy Khánh**.
+  - Mọi hành vi tự ý sao chép, sử dụng mã nguồn mà không có sự đồng ý của tác giả đều là **hành vi xâm phạm quyền tác giả và sở hữu trí tuệ** và sẽ bị xử lý theo quy định của pháp luật.
 
 ---
 
 <p align="center">
-  Được phát triển với ❤️ cho cộng đồng quản lý nhà trọ & căn hộ cho thuê tại Việt Nam.
+  Dự án được nghiên cứu, phát triển và sở hữu độc quyền bởi <b>Lê Duy Khánh</b>.
 </p>

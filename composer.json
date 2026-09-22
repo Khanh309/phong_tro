@@ -1,9 +1,9 @@
 {
-    "name": "laravel/laravel",
+    "name": "khanh309/phong_tro",
     "type": "project",
-    "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
-    "license": "MIT",
+    "description": "Hệ thống Quản lý Chuỗi Nhà trọ & Căn hộ cho thuê đa cơ sở NhaTroPro - Phát triển độc quyền bởi Lê Duy Khánh",
+    "keywords": ["quan-ly-nha-tro", "phong-tro", "vietqr", "laravel", "le-duy-khanh"],
+    "license": "proprietary",
     "require": {
         "php": "^8.1",
         "guzzlehttp/guzzle": "^7.2",
