@@ -104,6 +104,7 @@
             </button>
         </form>
 
+        @if(config('app.env') !== 'production' || config('app.debug'))
         <hr class="my-4">
 
         <!-- CHỌN NHANH ĐỂ TEST PHÂN QUYỀN (1-CLICK DEMO) -->
@@ -159,6 +160,7 @@
                 </button>
             </div>
         </div>
+        @endif
     </div>
 
     <!-- DÀNH CHO KHÁCH THUÊ TRỌ -->
