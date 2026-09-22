@@ -65,11 +65,10 @@ class TenantFeedbackAndPortalTest extends TestCase
 
     public function test_tenant_can_submit_feedback_and_landlord_can_reply(): void
     {
-        $tenant = Tenant::first();
         $invoice = Invoice::where('status', '!=', 'paid')->first();
-
-        $this->assertNotNull($tenant);
         $this->assertNotNull($invoice);
+        $tenant = $invoice->contract?->tenant ?? $invoice->room->currentContract?->tenant;
+        $this->assertNotNull($tenant);
 
         // 1. Tenant gửi khiếu nại chỉ số điện
         $response = $this->withSession(['tenant_id' => $tenant->id])

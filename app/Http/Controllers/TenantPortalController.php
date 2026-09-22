@@ -119,8 +119,20 @@ class TenantPortalController extends Controller
     public function storeFeedback(Request $request, Invoice $invoice)
     {
         $tenantId = session('tenant_id');
+        if (!$tenantId && auth()->check() && auth()->user()->isTenant()) {
+            $tenantId = auth()->user()->tenant_id;
+        }
+
         if (!$tenantId) {
             return back()->with('error', 'Vui lòng chọn khách thuê trước khi gửi khiếu nại!');
+        }
+
+        // Kiểm tra xem hóa đơn này có thuộc về khách thuê hiện tại không
+        $isTenantInvoice = ($invoice->contract && $invoice->contract->tenant_id == $tenantId)
+            || ($invoice->room->currentContract && $invoice->room->currentContract->tenant_id == $tenantId);
+
+        if (!$isTenantInvoice) {
+            abort(403, 'Bạn không thể gửi khiếu nại cho hóa đơn của phòng khác.');
         }
 
         $validated = $request->validate([
@@ -143,6 +155,10 @@ class TenantPortalController extends Controller
     public function storeMaintenance(Request $request)
     {
         $tenantId = session('tenant_id');
+        if (!$tenantId && auth()->check() && auth()->user()->isTenant()) {
+            $tenantId = auth()->user()->tenant_id;
+        }
+
         $tenant = Tenant::with('currentContract.room')->find($tenantId);
 
         if (!$tenant || !$tenant->currentContract) {
@@ -168,6 +184,13 @@ class TenantPortalController extends Controller
     // Chủ nhà phản hồi khiếu nại
     public function replyFeedback(Request $request, InvoiceFeedback $feedback)
     {
+        $user = auth()->user();
+        if ($user && !$user->isAdmin()) {
+            if ($feedback->invoice->room->property_id != $user->property_id) {
+                abort(403, 'Bạn không có quyền phản hồi khiếu nại của cơ sở khác.');
+            }
+        }
+
         $validated = $request->validate([
             'admin_reply' => 'required|string',
             'status' => 'required|in:processing,resolved,rejected',
@@ -188,6 +211,16 @@ class TenantPortalController extends Controller
         $invoice = Invoice::where('invoice_code', $code)
             ->with(['room.property', 'contract.tenant', 'feedbacks'])
             ->firstOrFail();
+
+        // Nếu đã đăng nhập tài khoản khách thuê hoặc có session khách thuê
+        $activeTenantId = (auth()->check() && auth()->user()->isTenant()) ? auth()->user()->tenant_id : session('tenant_id');
+        if ($activeTenantId && (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->isManager()))) {
+            $isOwnInvoice = ($invoice->contract && $invoice->contract->tenant_id == $activeTenantId)
+                || ($invoice->room->currentContract && $invoice->room->currentContract->tenant_id == $activeTenantId);
+            if (!$isOwnInvoice) {
+                abort(403, 'Bạn không có quyền xem hóa đơn của khách thuê khác.');
+            }
+        }
 
         $room = $invoice->room;
         $tenant = $invoice->contract?->tenant ?? Tenant::find(session('tenant_id'));

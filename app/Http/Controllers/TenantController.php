@@ -15,6 +15,14 @@ class TenantController extends Controller
 
         $query = Tenant::with(['currentContract.room.property', 'contracts', 'user']);
 
+        $user = $request->user();
+        if ($user && !$user->isAdmin()) {
+            $query->where(function ($q) use ($user) {
+                $q->whereHas('contracts.room', fn($r) => $r->where('property_id', $user->property_id))
+                  ->orWhereDoesntHave('contracts');
+            });
+        }
+
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -60,19 +68,35 @@ class TenantController extends Controller
         return redirect()->route('tenants.show', $tenant->id)->with('success', 'Thêm mới khách thuê thành công!');
     }
 
+    protected function authorizeTenantAccess(Tenant $tenant): void
+    {
+        $user = auth()->user();
+        if ($user && !$user->isAdmin()) {
+            $hasAnyContract = $tenant->contracts()->exists();
+            $hasContractInProperty = $tenant->contracts()->whereHas('room', fn($r) => $r->where('property_id', $user->property_id))->exists();
+            if ($hasAnyContract && !$hasContractInProperty) {
+                abort(403, 'Bạn không có quyền thao tác với khách thuê thuộc cơ sở khác.');
+            }
+        }
+    }
+
     public function show(Tenant $tenant)
     {
+        $this->authorizeTenantAccess($tenant);
         $tenant->load(['contracts.room.property', 'contracts.members', 'user']);
         return view('tenants.show', compact('tenant'));
     }
 
     public function edit(Tenant $tenant)
     {
+        $this->authorizeTenantAccess($tenant);
         return view('tenants.edit', compact('tenant'));
     }
 
     public function update(Request $request, Tenant $tenant)
     {
+        $this->authorizeTenantAccess($tenant);
+
         $validated = $request->validate([
             'name' => 'required|string|max:150',
             'phone' => 'required|string|max:20',
@@ -95,6 +119,8 @@ class TenantController extends Controller
 
     public function destroy(Tenant $tenant)
     {
+        $this->authorizeTenantAccess($tenant);
+
         if ($tenant->currentContract) {
             return back()->with('error', 'Không thể xóa khách đang có hợp đồng thuê phòng hiệu lực!');
         }
@@ -106,8 +132,14 @@ class TenantController extends Controller
     // Danh sách mẫu khai báo tạm trú gửi Công an
     public function policeRegistration(Request $request)
     {
-        $propertyId = $request->query('property_id');
-        $properties = Property::all();
+        $user = $request->user();
+        if ($user && !$user->isAdmin()) {
+            $propertyId = $user->property_id;
+            $properties = Property::where('id', $propertyId)->get();
+        } else {
+            $propertyId = $request->query('property_id');
+            $properties = Property::all();
+        }
 
         // Lấy tất cả khách đang ở (hợp đồng active) + thành viên ở cùng
         $query = Tenant::whereHas('currentContract', function ($q) use ($propertyId) {

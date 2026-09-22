@@ -63,10 +63,20 @@ class InvoiceController extends Controller
 
     public function create(Request $request)
     {
-        $properties = Property::all();
+        $user = $request->user();
+        if ($user && !$user->isAdmin()) {
+            $properties = Property::where('id', $user->property_id)->get();
+            $rooms = Room::where('status', 'occupied')->where('property_id', $user->property_id)->with('property')->get();
+        } else {
+            $properties = Property::all();
+            $rooms = Room::where('status', 'occupied')->with('property')->get();
+        }
+
         $roomId = $request->query('room_id');
         $room = $roomId ? Room::with(['fees', 'currentContract.tenant'])->find($roomId) : null;
-        $rooms = Room::where('status', 'occupied')->with('property')->get();
+        if ($room && $user && !$user->isAdmin() && $room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền lập hóa đơn cho phòng thuộc cơ sở khác.');
+        }
 
         $month = (int) $request->query('month', now()->month);
         $year = (int) $request->query('year', now()->year);
@@ -96,6 +106,11 @@ class InvoiceController extends Controller
         ]);
 
         $room = Room::with(['currentContract', 'fees'])->findOrFail($validated['room_id']);
+
+        $user = $request->user();
+        if ($user && !$user->isAdmin() && $room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền lập hóa đơn cho phòng thuộc cơ sở khác.');
+        }
         $tenantsCount = $room->currentContract ? ($room->currentContract->members()->count() + 1) : 1;
 
         // 1. Tính điện
@@ -223,7 +238,13 @@ class InvoiceController extends Controller
     // LƯU HÓA ĐƠN HÀNG LOẠT
     public function bulkStore(Request $request)
     {
+        $user = $request->user();
         $propertyId = $request->input('property_id');
+
+        if ($user && !$user->isAdmin() && $propertyId != $user->property_id) {
+            abort(403, 'Bạn không có quyền chốt hóa đơn hàng loạt cho cơ sở khác.');
+        }
+
         $month = (int) $request->input('month');
         $year = (int) $request->input('year');
         $dueDate = $request->input('due_date');
@@ -238,6 +259,10 @@ class InvoiceController extends Controller
 
             $room = Room::with(['currentContract', 'fees'])->find($roomId);
             if (!$room) continue;
+
+            if ($user && !$user->isAdmin() && $room->property_id != $user->property_id) {
+                continue;
+            }
 
             $elecOld = (float) ($data['electricity_old'] ?? 0);
             $elecNew = (float) $data['electricity_new'];
@@ -334,12 +359,22 @@ class InvoiceController extends Controller
 
     public function show(Invoice $invoice)
     {
+        $user = auth()->user();
+        if ($user && !$user->isAdmin() && $invoice->room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền xem hóa đơn thuộc cơ sở khác.');
+        }
+
         $invoice->load(['room.property', 'contract.tenant', 'contract.members', 'feedbacks.tenant']);
         return view('invoices.show', compact('invoice'));
     }
 
     public function print(Invoice $invoice)
     {
+        $user = auth()->user();
+        if ($user && !$user->isAdmin() && $invoice->room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền in hóa đơn thuộc cơ sở khác.');
+        }
+
         $invoice->load(['room.property', 'contract.tenant']);
         return view('invoices.print', compact('invoice'));
     }
@@ -347,6 +382,11 @@ class InvoiceController extends Controller
     // Ghi nhận thanh toán
     public function recordPayment(Request $request, Invoice $invoice)
     {
+        $user = $request->user();
+        if ($user && !$user->isAdmin() && $invoice->room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền cập nhật thanh toán cho hóa đơn thuộc cơ sở khác.');
+        }
+
         $validated = $request->validate([
             'payment_amount' => 'required|numeric|min:1',
             'payment_method' => 'required|in:transfer,cash',
@@ -376,6 +416,11 @@ class InvoiceController extends Controller
 
     public function destroy(Invoice $invoice)
     {
+        $user = auth()->user();
+        if ($user && !$user->isAdmin() && $invoice->room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền xóa hóa đơn thuộc cơ sở khác.');
+        }
+
         $invoice->delete();
         return redirect()->route('invoices.index')->with('success', 'Đã xóa hóa đơn!');
     }

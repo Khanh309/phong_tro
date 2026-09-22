@@ -83,6 +83,11 @@ class RoomController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        $user = $request->user();
+        if ($user && !$user->isAdmin() && $validated['property_id'] != $user->property_id) {
+            abort(403, 'Bạn chỉ được tạo phòng trong cơ sở được phân công.');
+        }
+
         $property = Property::find($validated['property_id']);
         $validated['internet_type'] = $validated['internet_type'] ?? ($property?->default_internet_type ?? 'fixed');
         $validated['internet_rate'] = $validated['internet_rate'] ?? ($property?->default_internet_rate ?? 100000);
@@ -111,6 +116,11 @@ class RoomController extends Controller
 
     public function show(Room $room)
     {
+        $user = auth()->user();
+        if ($user && !$user->isAdmin() && $room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền xem phòng thuộc cơ sở khác.');
+        }
+
         $room->load([
             'property',
             'fees',
@@ -126,12 +136,28 @@ class RoomController extends Controller
 
     public function edit(Room $room)
     {
-        $properties = Property::all();
+        $user = auth()->user();
+        if ($user && !$user->isAdmin()) {
+            if ($room->property_id != $user->property_id) {
+                abort(403, 'Bạn không có quyền chỉnh sửa phòng thuộc cơ sở khác.');
+            }
+            $properties = Property::where('id', $user->property_id)->get();
+        } else {
+            $properties = Property::all();
+        }
+
         return view('rooms.edit', compact('room', 'properties'));
     }
 
     public function update(Request $request, Room $room)
     {
+        $user = $request->user();
+        if ($user && !$user->isAdmin()) {
+            if ($room->property_id != $user->property_id) {
+                abort(403, 'Bạn không có quyền chỉnh sửa phòng thuộc cơ sở khác.');
+            }
+        }
+
         $validated = $request->validate([
             'property_id' => 'required|exists:properties,id',
             'room_number' => 'required|string|max:50',
@@ -151,6 +177,10 @@ class RoomController extends Controller
             'internet_rate' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
         ]);
+
+        if ($user && !$user->isAdmin() && $validated['property_id'] != $user->property_id) {
+            abort(403, 'Bạn không thể chuyển phòng sang cơ sở khác.');
+        }
 
         $validated['internet_type'] = $validated['internet_type'] ?? ($room->internet_type ?? 'fixed');
         $validated['internet_rate'] = $validated['internet_rate'] ?? ($room->internet_rate ?? 100000);
@@ -176,6 +206,11 @@ class RoomController extends Controller
 
     public function destroy(Room $room)
     {
+        $user = auth()->user();
+        if ($user && !$user->isAdmin() && $room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền xóa phòng thuộc cơ sở khác.');
+        }
+
         if ($room->status === 'occupied') {
             return back()->with('error', 'Không thể xóa phòng đang có khách thuê!');
         }
@@ -187,6 +222,11 @@ class RoomController extends Controller
     // Thêm phí riêng cho phòng
     public function addFee(Request $request, Room $room)
     {
+        $user = $request->user();
+        if ($user && !$user->isAdmin() && $room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền thao tác với phòng thuộc cơ sở khác.');
+        }
+
         $validated = $request->validate([
             'fee_name' => 'required|string|max:100',
             'fee_type' => 'required|in:fixed,per_person,per_unit',
@@ -201,6 +241,11 @@ class RoomController extends Controller
     // Xóa phí riêng của phòng
     public function deleteFee(RoomFee $fee)
     {
+        $user = auth()->user();
+        if ($user && !$user->isAdmin() && $fee->room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền xóa phí của phòng thuộc cơ sở khác.');
+        }
+
         $fee->delete();
         return back()->with('success', 'Đã xóa khoản phí!');
     }
@@ -208,6 +253,11 @@ class RoomController extends Controller
     // Thêm tài sản nội thất phòng
     public function addAsset(Request $request, Room $room)
     {
+        $user = $request->user();
+        if ($user && !$user->isAdmin() && $room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền thao tác với phòng thuộc cơ sở khác.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:150',
             'quantity' => 'required|integer|min:1',
@@ -222,6 +272,11 @@ class RoomController extends Controller
     // Xóa tài sản phòng
     public function deleteAsset(RoomAsset $asset)
     {
+        $user = auth()->user();
+        if ($user && !$user->isAdmin() && $asset->room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền xóa tài sản của phòng thuộc cơ sở khác.');
+        }
+
         $asset->delete();
         return back()->with('success', 'Đã xóa tài sản khỏi phòng!');
     }
@@ -229,8 +284,15 @@ class RoomController extends Controller
     // Tìm kiếm phòng trống nhanh (Quick Vacant Room Finder)
     public function vacantFinder(Request $request)
     {
-        $properties = Property::all();
-        $propertyId = $request->query('property_id');
+        $user = $request->user();
+        if ($user && !$user->isAdmin()) {
+            $propertyId = $user->property_id;
+            $properties = Property::where('id', $propertyId)->get();
+        } else {
+            $propertyId = $request->query('property_id');
+            $properties = Property::all();
+        }
+
         $minPrice = $request->query('min_price');
         $maxPrice = $request->query('max_price');
         $minArea = $request->query('min_area');

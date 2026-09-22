@@ -67,6 +67,11 @@ class ContractController extends Controller
 
         $room = Room::findOrFail($validated['room_id']);
 
+        $user = $request->user();
+        if ($user && !$user->isAdmin() && $room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền lập hợp đồng cho phòng thuộc cơ sở khác.');
+        }
+
         // Tự động sinh mã hợp đồng HD-YYYYMM-ROOM
         $code = 'HD-' . now()->format('Ym') . '-' . $room->room_number . '-' . rand(100, 999);
         $validated['contract_code'] = $code;
@@ -82,17 +87,32 @@ class ContractController extends Controller
 
     public function show(Contract $contract)
     {
+        $user = auth()->user();
+        if ($user && !$user->isAdmin() && $contract->room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền xem hợp đồng thuộc cơ sở khác.');
+        }
+
         $contract->load(['room.property', 'room.assets', 'room.fees', 'tenant', 'members', 'invoices' => fn($q) => $q->orderBy('year', 'desc')->orderBy('month', 'desc')]);
         return view('contracts.show', compact('contract'));
     }
 
     public function edit(Contract $contract)
     {
+        $user = auth()->user();
+        if ($user && !$user->isAdmin() && $contract->room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền chỉnh sửa hợp đồng thuộc cơ sở khác.');
+        }
+
         return view('contracts.edit', compact('contract'));
     }
 
     public function update(Request $request, Contract $contract)
     {
+        $user = $request->user();
+        if ($user && !$user->isAdmin() && $contract->room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền cập nhật hợp đồng thuộc cơ sở khác.');
+        }
+
         $validated = $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
@@ -111,6 +131,11 @@ class ContractController extends Controller
     // Thêm người ở cùng vào hợp đồng
     public function addMember(Request $request, Contract $contract)
     {
+        $user = $request->user();
+        if ($user && !$user->isAdmin() && $contract->room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền thêm thành viên cho hợp đồng thuộc cơ sở khác.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:150',
             'phone' => 'nullable|string|max:20',
@@ -126,6 +151,11 @@ class ContractController extends Controller
     // Xóa người ở cùng
     public function deleteMember(ContractMember $member)
     {
+        $user = auth()->user();
+        if ($user && !$user->isAdmin() && $member->contract->room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền xóa thành viên của hợp đồng thuộc cơ sở khác.');
+        }
+
         $member->delete();
         return back()->with('success', 'Đã xóa thành viên khỏi hợp đồng!');
     }
@@ -133,6 +163,11 @@ class ContractController extends Controller
     // In Hợp đồng thuê phòng & Biên bản bàn giao tài sản chuẩn pháp lý
     public function print(Contract $contract)
     {
+        $user = auth()->user();
+        if ($user && !$user->isAdmin() && $contract->room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền in hợp đồng thuộc cơ sở khác.');
+        }
+
         $contract->load(['room.property', 'room.assets', 'room.fees', 'tenant', 'members']);
         return view('contracts.print', compact('contract'));
     }
@@ -140,6 +175,11 @@ class ContractController extends Controller
     // Form Trả phòng / Quyết toán cọc (Check-out)
     public function showCheckout(Contract $contract)
     {
+        $user = auth()->user();
+        if ($user && !$user->isAdmin() && $contract->room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền trả phòng cho hợp đồng thuộc cơ sở khác.');
+        }
+
         $contract->load(['room.property', 'room.assets', 'tenant', 'invoices']);
         $latestElec = $contract->room->getLatestElectricityReading();
         $latestWater = $contract->room->getLatestWaterReading();
@@ -150,6 +190,11 @@ class ContractController extends Controller
     // Xử lý Trả phòng / Quyết toán cọc
     public function processCheckout(Request $request, Contract $contract)
     {
+        $user = $request->user();
+        if ($user && !$user->isAdmin() && $contract->room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền thanh lý hợp đồng thuộc cơ sở khác.');
+        }
+
         $validated = $request->validate([
             'final_electricity' => 'required|numeric|min:0',
             'final_water' => 'required|numeric|min:0',
@@ -176,5 +221,20 @@ class ContractController extends Controller
         ]);
 
         return redirect()->route('contracts.show', $contract->id)->with('success', 'Thanh lý hợp đồng và trả phòng thành công!');
+    }
+
+    public function destroy(Contract $contract)
+    {
+        $user = auth()->user();
+        if ($user && !$user->isAdmin() && $contract->room->property_id != $user->property_id) {
+            abort(403, 'Bạn không có quyền xóa hợp đồng thuộc cơ sở khác.');
+        }
+
+        if ($contract->status === 'active') {
+            return back()->with('error', 'Không thể xóa hợp đồng đang có hiệu lực! Hãy làm thủ tục trả phòng/thanh lý trước.');
+        }
+
+        $contract->delete();
+        return redirect()->route('contracts.index')->with('success', 'Đã xóa hợp đồng!');
     }
 }
