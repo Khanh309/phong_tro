@@ -295,6 +295,7 @@ phong_tro/
 │       └── portal/                           # Cổng Dashboard & chi tiết HĐ khách thuê
 └── tests/
     └── Feature/                              # Bộ kiểm thử tự động toàn diện
+        ├── ImageUploadAndCleanupTest.php     # Kiểm thử upload nhiều ảnh & tự động dọn rác
         ├── ProductionSecurityAuditTest.php   # Kiểm thử bảo mật sản phẩm & trang home
         ├── RoleBasedAccessControlTest.php    # Kiểm thử phân quyền 3 vai trò
         ├── TenantAccountAndFeeTest.php       # Kiểm thử cấp tài khoản & tính điện nước
@@ -307,7 +308,7 @@ phong_tro/
 
 ## 🧪 Kiểm Thử Tự Động (PHPUnit Suite)
 
-Dự án bao gồm bộ kiểm thử tự động toàn diện với **56 test case** (208 assertions) bao phủ từ trang chủ công khai, phân quyền, bảo mật sản phẩm, nghiệp vụ hợp đồng đến tính toán điện nước:
+Dự án bao gồm bộ kiểm thử tự động toàn diện với **62 test case** (245 assertions) bao phủ từ upload nhiều ảnh, dọn rác storage, trang chủ công khai, phân quyền, bảo mật sản phẩm, nghiệp vụ hợp đồng đến tính toán điện nước:
 
 ```bash
 php vendor/bin/phpunit
@@ -320,11 +321,11 @@ PHPUnit 10.5.64 by Sebastian Bergmann and contributors.
 Runtime:       PHP 8.2.12
 Configuration: D:\demo_gemini\phpunit.xml
 
-........................................................          56 / 56 (100%)
+..............................................................    62 / 62 (100%)
 
-Time: 00:03.955, Memory: 40.00 MB
+Time: 00:03.166, Memory: 42.00 MB
 
-OK (56 tests, 208 assertions)
+OK (62 tests, 245 assertions)
 ```
 
 ---
