@@ -21,7 +21,7 @@ class RentalSystemTest extends TestCase
 
     public function test_dashboard_renders_successfully(): void
     {
-        $response = $this->get('/');
+        $response = $this->get('/dashboard');
         $response->assertStatus(200);
         $response->assertSee('Bảng Điều Khiển Trung Tâm');
     }

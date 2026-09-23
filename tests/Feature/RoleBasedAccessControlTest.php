@@ -15,9 +15,14 @@ class RoleBasedAccessControlTest extends TestCase
     {
         $response = $this->get('/dashboard');
         $response->assertRedirect('/login');
+    }
 
-        $rootResponse = $this->get('/');
-        $rootResponse->assertRedirect('/login');
+    public function test_guest_can_access_home_page_and_browse_vacant_rooms(): void
+    {
+        $response = $this->get('/');
+        $response->assertStatus(200);
+        $response->assertSee('Tìm Thuê Phòng Trọ');
+        $response->assertSee('Đăng Nhập');
     }
 
     public function test_login_page_renders_successfully(): void

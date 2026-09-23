@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PropertyController;
@@ -20,6 +21,11 @@ use App\Http\Controllers\TenantPortalController;
 */
 
 // ==========================================
+// 0. TRANG CHỦ CÔNG KHAI (TÌM TRỌ CÒN TRỐNG)
+// ==========================================
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// ==========================================
 // 1. XÁC THỰC TÀI KHOẢN (AUTHENTICATION)
 // ==========================================
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -31,9 +37,8 @@ Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 // ==========================================
 Route::middleware(['auth', 'role.staff'])->group(function () {
 
-    // DASHBOARD & TỔNG QUAN
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard', [DashboardController::class, 'index']);
+    // DASHBOARD & TỔNG QUAN NỘI BỘ
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // PHÒNG TRỌ & DỊCH VỤ ĐI KÈM
     Route::get('rooms/vacant-finder', [RoomController::class, 'vacantFinder'])->name('rooms.vacant_finder');

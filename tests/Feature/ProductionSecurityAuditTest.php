@@ -399,4 +399,33 @@ class ProductionSecurityAuditTest extends TestCase
         ]);
         $response->assertStatus(403);
     }
+
+    public function test_home_page_only_lists_vacant_rooms_and_has_login_button(): void
+    {
+        $vacantRoom = Room::create([
+            'property_id' => $this->propertyA->id,
+            'room_number' => 'VACANT-999',
+            'floor' => 2,
+            'room_type' => 'Khép kín',
+            'price' => 2800000,
+            'area' => 22,
+            'max_tenants' => 2,
+            'status' => 'available',
+            'initial_electricity' => 0,
+            'electricity_rate' => 3500,
+            'initial_water' => 0,
+            'water_calculation_type' => 'meter',
+            'water_rate' => 30000,
+        ]);
+
+        $response = $this->get('/');
+        $response->assertStatus(200);
+        $response->assertSee('VACANT-999');
+        $response->assertSee('Đăng Nhập');
+
+        // Test filtering by property
+        $filterResponse = $this->get('/?property_id=' . $this->propertyA->id);
+        $filterResponse->assertStatus(200);
+        $filterResponse->assertSee('VACANT-999');
+    }
 }

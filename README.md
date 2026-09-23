@@ -71,7 +71,9 @@ flowchart TD
 
 | Chức Năng | 👑 Admin Tổng Thể | 👔 Quản Lý Cơ Sở (`manager`) | 👤 Khách Thuê (`tenant`) |
 | :--- | :---: | :---: | :---: |
-| **Khu vực truy cập** | `/dashboard`, `/` | `/dashboard` (Scoped) | `/khach-thue` |
+| **Trang Chủ Tìm Trọ Công Khai (`/`)** | ✅ Tìm & Lọc phòng trống | ✅ Tìm & Lọc phòng trống | ✅ Tìm & Lọc phòng trống |
+| **Khu vực quản trị nội bộ** | `/dashboard` (Toàn quyền) | `/dashboard` (Scoped tòa) | ❌ Chặn `403` |
+| **Cổng Portal Khách Thuê** | ❌ Chặn `403` | ❌ Chặn `403` | `/khach-thue` |
 | **Thêm / Sửa / Xóa Cơ Sở (Nhà Trọ)** | ✅ Toàn quyền | ❌ Chặn `403` | ❌ Chặn `403` |
 | **Chi phí EVN, Nước tổng, Thuế** | ✅ Toàn quyền | ❌ Chặn `403` | ❌ Chặn `403` |
 | **Báo cáo Lợi Nhuận Ròng & Thất thoát** | ✅ Xem toàn bộ | ❌ Chặn `403` | ❌ Chặn `403` |
@@ -279,6 +281,7 @@ phong_tro/
 │       ├── layouts/
 │       │   ├── app.blade.php                 # Layout quản trị Admin & Manager
 │       │   └── tenant.blade.php              # Layout chuyên biệt cho Khách Thuê
+│       ├── home.blade.php                    # Trang chủ công khai tìm trọ trống & login
 │       ├── auth/                             # Giao diện Đăng nhập & 1-Click Demo
 │       ├── dashboard/                        # Bảng điều khiển KPI & thống kê
 │       ├── properties/                       # Quản lý cơ sở nhà trọ
@@ -292,6 +295,7 @@ phong_tro/
 │       └── portal/                           # Cổng Dashboard & chi tiết HĐ khách thuê
 └── tests/
     └── Feature/                              # Bộ kiểm thử tự động toàn diện
+        ├── ProductionSecurityAuditTest.php   # Kiểm thử bảo mật sản phẩm & trang home
         ├── RoleBasedAccessControlTest.php    # Kiểm thử phân quyền 3 vai trò
         ├── TenantAccountAndFeeTest.php       # Kiểm thử cấp tài khoản & tính điện nước
         ├── TenantFeedbackAndPortalTest.php   # Kiểm thử Cổng khách thuê & khiếu nại
@@ -303,7 +307,7 @@ phong_tro/
 
 ## 🧪 Kiểm Thử Tự Động (PHPUnit Suite)
 
-Dự án bao gồm bộ kiểm thử tự động toàn diện với **42 test case** bao phủ từ phân quyền, nghiệp vụ hợp đồng đến tính toán điện nước:
+Dự án bao gồm bộ kiểm thử tự động toàn diện với **56 test case** (208 assertions) bao phủ từ trang chủ công khai, phân quyền, bảo mật sản phẩm, nghiệp vụ hợp đồng đến tính toán điện nước:
 
 ```bash
 php vendor/bin/phpunit
@@ -316,11 +320,11 @@ PHPUnit 10.5.64 by Sebastian Bergmann and contributors.
 Runtime:       PHP 8.2.12
 Configuration: D:\demo_gemini\phpunit.xml
 
-..........................................                        42 / 42 (100%)
+........................................................          56 / 56 (100%)
 
-Time: 00:01.535, Memory: 36.00 MB
+Time: 00:03.955, Memory: 40.00 MB
 
-OK (42 tests, 164 assertions)
+OK (56 tests, 208 assertions)
 ```
 
 ---
