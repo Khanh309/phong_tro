@@ -349,4 +349,54 @@ class ProductionSecurityAuditTest extends TestCase
             'status' => 'resolved',
         ]);
     }
+
+    public function test_manager_cannot_create_contract_with_tenant_of_other_property(): void
+    {
+        // Manager A tries to create contract for Room A but with Tenant B (from Property B)
+        $response = $this->actingAs($this->managerA)->post('/contracts', [
+            'room_id' => $this->roomA->id,
+            'tenant_id' => $this->tenantB->id,
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->addYear()->toDateString(),
+            'rental_price' => 3000000,
+            'deposit_amount' => 3000000,
+            'deposit_status' => 'held',
+        ]);
+        $response->assertStatus(403);
+    }
+
+    public function test_manager_dashboard_hides_landlord_net_profit_and_state_tax(): void
+    {
+        // Manager A viewing dashboard does not see landlord confidential cards
+        $managerResponse = $this->actingAs($this->managerA)->get('/dashboard');
+        $managerResponse->assertStatus(200);
+        $managerResponse->assertDontSee('LỢI NHUẬN RÒNG (THU - CHI)');
+        $managerResponse->assertDontSee('CHI PHÍ TRẢ NHÀ NƯỚC');
+        $managerResponse->assertSee('HÓA ĐƠN CHƯA THU (NỢ)');
+        $managerResponse->assertSee('HỢP ĐỒNG SẮP HẾT HẠN');
+
+        // Admin viewing dashboard sees landlord financial summary
+        $adminResponse = $this->actingAs($this->admin)->get('/dashboard');
+        $adminResponse->assertStatus(200);
+        $adminResponse->assertSee('LỢI NHUẬN RÒNG (THU - CHI)');
+        $adminResponse->assertSee('CHI PHÍ TRẢ NHÀ NƯỚC');
+    }
+
+    public function test_phone_lookup_with_credentialed_tenant_redirects_to_password_login(): void
+    {
+        // Tenant A has a User account. Typing their phone number must redirect to /login
+        $response = $this->get("/khach-thue?phone={$this->tenantA->phone}");
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('info');
+    }
+
+    public function test_quick_select_in_production_is_forbidden(): void
+    {
+        config(['app.env' => 'production', 'app.debug' => false]);
+
+        $response = $this->post('/khach-thue/select', [
+            'tenant_id' => $this->tenantA->id,
+        ]);
+        $response->assertStatus(403);
+    }
 }

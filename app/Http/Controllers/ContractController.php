@@ -44,9 +44,14 @@ class ContractController extends Controller
         $roomsQuery = Room::where('status', 'available')->with('property');
         if ($user && !$user->isAdmin()) {
             $roomsQuery->where('property_id', $user->property_id);
+            $tenants = Tenant::where(function ($q) use ($user) {
+                $q->whereHas('contracts.room', fn($r) => $r->where('property_id', $user->property_id))
+                  ->orWhereDoesntHave('contracts');
+            })->get();
+        } else {
+            $tenants = Tenant::all();
         }
         $rooms = $roomsQuery->get();
-        $tenants = Tenant::all();
         $selectedRoomId = $request->query('room_id');
 
         return view('contracts.create', compact('rooms', 'tenants', 'selectedRoomId'));
@@ -68,8 +73,17 @@ class ContractController extends Controller
         $room = Room::findOrFail($validated['room_id']);
 
         $user = $request->user();
-        if ($user && !$user->isAdmin() && $room->property_id != $user->property_id) {
-            abort(403, 'Bạn không có quyền lập hợp đồng cho phòng thuộc cơ sở khác.');
+        if ($user && !$user->isAdmin()) {
+            if ($room->property_id != $user->property_id) {
+                abort(403, 'Bạn không có quyền lập hợp đồng cho phòng thuộc cơ sở khác.');
+            }
+
+            $tenant = Tenant::findOrFail($validated['tenant_id']);
+            $hasAnyContract = $tenant->contracts()->exists();
+            $hasContractInProperty = $tenant->contracts()->whereHas('room', fn($r) => $r->where('property_id', $user->property_id))->exists();
+            if ($hasAnyContract && !$hasContractInProperty) {
+                abort(403, 'Bạn không thể lập hợp đồng cho khách thuê thuộc cơ sở khác.');
+            }
         }
 
         // Tự động sinh mã hợp đồng HD-YYYYMM-ROOM

@@ -159,48 +159,84 @@
         </div>
     </div>
 
-    <!-- DÒNG CHI: Trả Nhà nước & Vận hành -->
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card h-100 p-3">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-                <span class="text-muted small fw-semibold">CHI PHÍ TRẢ NHÀ NƯỚC & VH</span>
-                <i class="bi bi-bank text-danger fs-5"></i>
-            </div>
-            <h3 class="fw-bold text-danger mb-1">{{ number_format($totalExpenses, 0, ',', '.') }}đ</h3>
-            <div class="text-muted small">
-                Điện EVN: <b>{{ number_format($expenseElecEvn, 0, ',', '.') }}đ</b> | Thuế: <b>{{ number_format($expenseStateTax, 0, ',', '.') }}đ</b>
-            </div>
-            <div class="mt-2 pt-2 border-top d-flex justify-content-between small">
-                <span class="text-muted">Nước tổng & Phí khác:</span>
-                <span class="fw-semibold">{{ number_format($expenseWaterSupply + $expenseOther, 0, ',', '.') }}đ</span>
+    @if(auth()->user()?->isAdmin())
+        <!-- DÒNG CHI: Trả Nhà nước & Vận hành (Chỉ Chủ Nhà Trọ) -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 p-3">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="text-muted small fw-semibold">CHI PHÍ TRẢ NHÀ NƯỚC & VH</span>
+                    <i class="bi bi-bank text-danger fs-5"></i>
+                </div>
+                <h3 class="fw-bold text-danger mb-1">{{ number_format($totalExpenses, 0, ',', '.') }}đ</h3>
+                <div class="text-muted small">
+                    Điện EVN: <b>{{ number_format($expenseElecEvn, 0, ',', '.') }}đ</b> | Thuế: <b>{{ number_format($expenseStateTax, 0, ',', '.') }}đ</b>
+                </div>
+                <div class="mt-2 pt-2 border-top d-flex justify-content-between small">
+                    <span class="text-muted">Nước tổng & Phí khác:</span>
+                    <span class="fw-semibold">{{ number_format($expenseWaterSupply + $expenseOther, 0, ',', '.') }}đ</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- LỢI NHUẬN RÒNG (THỰC THU - THỰC CHI) -->
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card h-100 p-3 {{ $netProfit >= 0 ? 'border-success' : 'border-danger' }}">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-                <span class="text-muted small fw-semibold">LỢI NHUẬN RÒNG (THU - CHI)</span>
-                <i class="bi bi-cash-coin {{ $netProfit >= 0 ? 'text-success' : 'text-danger' }} fs-5"></i>
-            </div>
-            <h3 class="fw-bold {{ $netProfit >= 0 ? 'text-success' : 'text-danger' }} mb-1">
-                {{ ($netProfit >= 0 ? '+' : '') . number_format($netProfit, 0, ',', '.') }}đ
-            </h3>
-            <div class="text-muted small">
-                {{ $netProfit >= 0 ? 'Dòng tiền dương sau khi chi trả' : 'Chưa thu đủ tiền bù chi phí' }}
-            </div>
-            <div class="mt-2 pt-2 border-top d-flex justify-content-between small">
-                @if(auth()->user()?->isAdmin())
+        <!-- LỢI NHUẬN RÒNG (THỰC THU - THỰC CHI) (Chỉ Chủ Nhà Trọ) -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 p-3 {{ $netProfit >= 0 ? 'border-success' : 'border-danger' }}">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="text-muted small fw-semibold">LỢI NHUẬN RÒNG (THU - CHI)</span>
+                    <i class="bi bi-cash-coin {{ $netProfit >= 0 ? 'text-success' : 'text-danger' }} fs-5"></i>
+                </div>
+                <h3 class="fw-bold {{ $netProfit >= 0 ? 'text-success' : 'text-danger' }} mb-1">
+                    {{ ($netProfit >= 0 ? '+' : '') . number_format($netProfit, 0, ',', '.') }}đ
+                </h3>
+                <div class="text-muted small">
+                    {{ $netProfit >= 0 ? 'Dòng tiền dương sau khi chi trả' : 'Chưa thu đủ tiền bù chi phí' }}
+                </div>
+                <div class="mt-2 pt-2 border-top d-flex justify-content-between small">
                     <a href="{{ route('reports.financial', ['property_id' => $propertyId, 'month' => $month, 'year' => $year]) }}" class="text-decoration-none fw-semibold">
                         Xem báo cáo chi tiết <i class="bi bi-arrow-right"></i>
                     </a>
-                @else
-                    <span class="text-muted small fst-italic"><i class="bi bi-shield-lock me-1"></i> Báo cáo tài chính: Chỉ Chủ trọ xem</span>
-                @endif
+                </div>
             </div>
         </div>
-    </div>
+    @else
+        <!-- THẺ VẬN HÀNH DÀNH CHO QUẢN LÝ: ĐÔN ĐỐC THU TIỀN -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 p-3 border-danger">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="text-muted small fw-semibold">HÓA ĐƠN CHƯA THU (NỢ)</span>
+                    <i class="bi bi-exclamation-circle text-danger fs-5"></i>
+                </div>
+                <h3 class="fw-bold text-danger mb-1">{{ number_format($totalUnpaid, 0, ',', '.') }}đ</h3>
+                <div class="text-muted small">
+                    Quá hạn: <b class="text-danger">{{ $overdueInvoices->count() }}</b> | Sắp đến hạn: <b class="text-warning">{{ $dueSoonInvoices->count() }}</b>
+                </div>
+                <div class="mt-2 pt-2 border-top d-flex justify-content-between small">
+                    <a href="{{ route('invoices.index', ['status' => 'unpaid']) }}" class="text-decoration-none text-danger fw-semibold">
+                        Xem danh sách nợ <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- THẺ VẬN HÀNH DÀNH CHO QUẢN LÝ: HỢP ĐỒNG SẮP HẾT HẠN -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 p-3 border-warning">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="text-muted small fw-semibold">HỢP ĐỒNG SẮP HẾT HẠN</span>
+                    <i class="bi bi-clock-history text-warning fs-5"></i>
+                </div>
+                <h3 class="fw-bold text-warning mb-1">{{ $expiringContracts->count() }} phòng</h3>
+                <div class="text-muted small">
+                    Hết hạn trong 30 ngày tới cần liên hệ gia hạn
+                </div>
+                <div class="mt-2 pt-2 border-top d-flex justify-content-between small">
+                    <a href="{{ route('contracts.index', ['status' => 'active']) }}" class="text-decoration-none fw-semibold">
+                        Xem hợp đồng <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 
 <!-- DANH SÁCH NHÀ TRỌ / TÒA NHÀ CỦA BẠN -->

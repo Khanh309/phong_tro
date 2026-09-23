@@ -30,13 +30,22 @@ class TenantPortalController extends Controller
         if ($phone) {
             $found = Tenant::where('phone', trim($phone))->first();
             if ($found) {
+                // Nếu khách thuê đã có tài khoản User (đã đặt mật khẩu) và chưa đăng nhập, bắt buộc chuyển sang trang /login
+                if ($found->user()->exists() && (!auth()->check() || auth()->user()->tenant_id !== $found->id)) {
+                    return redirect()->route('login')
+                        ->with('info', "Khách thuê {$found->name} đã được cấp tài khoản hệ thống. Vui lòng đăng nhập bằng Email và Mật khẩu để bảo mật thông tin.");
+                }
                 session(['tenant_id' => $found->id]);
                 $tenantId = $found->id;
+            } else {
+                return redirect()->route('portal.index')->with('error', 'Không tìm thấy thông tin khách thuê với số điện thoại này.');
             }
         }
 
-        // Danh sách khách thuê để chọn nhanh (tiện cho người dùng test không cần gõ)
-        $allTenants = Tenant::whereHas('currentContract')->with('currentContract.room.property')->get();
+        // Danh sách khách thuê để chọn nhanh (chỉ tải ở môi trường demo)
+        $allTenants = (config('app.env') !== 'production' || config('app.debug'))
+            ? Tenant::whereHas('currentContract')->with('currentContract.room.property')->get()
+            : collect();
 
         if (!$tenantId) {
             return view('portal.login', compact('allTenants'));
@@ -93,9 +102,13 @@ class TenantPortalController extends Controller
         ));
     }
 
-    // Chọn nhanh khách thuê
+    // Chọn nhanh khách thuê (Chỉ cho phép ở môi trường demo / dev)
     public function selectTenant(Request $request)
     {
+        if (config('app.env') === 'production' && !config('app.debug')) {
+            abort(403, 'Tính năng chọn nhanh chỉ hỗ trợ trong môi trường thử nghiệm.');
+        }
+
         $tenantId = $request->input('tenant_id');
         if ($tenantId) {
             session(['tenant_id' => $tenantId]);

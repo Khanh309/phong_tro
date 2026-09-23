@@ -23,7 +23,7 @@ use App\Http\Controllers\TenantPortalController;
 // 1. XÁC THỰC TÀI KHOẢN (AUTHENTICATION)
 // ==========================================
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('login', [AuthController::class, 'login']);
+Route::post('login', [AuthController::class, 'login'])->middleware('throttle:30,1');
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
 // ==========================================
