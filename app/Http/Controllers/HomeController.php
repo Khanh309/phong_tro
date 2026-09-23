@@ -18,6 +18,7 @@ class HomeController extends Controller
         ])->get();
 
         $propertyId = $request->query('property_id');
+        $priceRange = $request->query('price_range');
         $minPrice = $request->query('min_price');
         $maxPrice = $request->query('max_price');
         $minArea = $request->query('min_area');
@@ -28,6 +29,14 @@ class HomeController extends Controller
 
         if ($propertyId) {
             $query->where('property_id', $propertyId);
+        }
+
+        if ($priceRange === 'under_3m') {
+            $query->where('price', '<', 3000000);
+        } elseif ($priceRange === '3m_5m') {
+            $query->whereBetween('price', [3000000, 5000000]);
+        } elseif ($priceRange === 'above_5m') {
+            $query->where('price', '>', 5000000);
         }
 
         if ($minPrice) {
@@ -62,6 +71,7 @@ class HomeController extends Controller
             'vacantRooms',
             'properties',
             'propertyId',
+            'priceRange',
             'minPrice',
             'maxPrice',
             'minArea',
