@@ -36,6 +36,35 @@
 <div class="row g-4">
     <!-- CỘT TRÁI: THÔNG SỐ PHÒNG & KHÁCH THUÊ HIỆN TẠI -->
     <div class="col-12 col-lg-4">
+        <!-- Ảnh phòng trọ -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="fw-bold text-dark"><i class="bi bi-images text-primary me-2"></i>Ảnh Phòng ({{ count($room->images ?? []) }})</span>
+                <a href="{{ route('rooms.edit', $room->id) }}" class="small text-decoration-none">
+                    <i class="bi bi-pencil-square me-1"></i>Quản lý ảnh
+                </a>
+            </div>
+            <div class="card-body p-2">
+                @if(!empty($room->images) && count($room->images) > 0)
+                    <div class="row g-2">
+                        @foreach($room->images as $img)
+                            <div class="col-6">
+                                <a href="{{ asset('storage/' . $img) }}" target="_blank">
+                                    <img src="{{ asset('storage/' . $img) }}" class="img-fluid rounded border shadow-sm w-100 object-fit-cover" style="height: 110px;" alt="Ảnh phòng">
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="text-center py-3 text-muted small">
+                        <i class="bi bi-camera fs-3 d-block mb-1"></i>
+                        Chưa có ảnh thực tế tải lên.<br>
+                        <a href="{{ route('rooms.edit', $room->id) }}">Bấm vào đây để tải ảnh phòng</a>
+                    </div>
+                @endif
+            </div>
+        </div>
+
         <!-- Thông số cơ bản -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-white">

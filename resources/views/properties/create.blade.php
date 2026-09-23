@@ -10,7 +10,7 @@
                 <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-building-add text-primary me-2"></i>Thêm Cơ Sở / Nhà Trọ Mới</h5>
             </div>
             <div class="card-body p-4">
-                <form action="{{ route('properties.store') }}" method="POST">
+                <form action="{{ route('properties.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">1. Thông tin chung về nhà trọ</h6>
@@ -102,6 +102,18 @@
                         </div>
                     </div>
 
+                    <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">5. Ảnh đại diện cơ sở / tòa nhà</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Tải lên ảnh mặt tiền hoặc toàn cảnh tòa nhà</label>
+                            <input type="file" name="image" id="propertyImageInput" class="form-control" accept="image/*">
+                            <div class="form-text">Định dạng JPG, PNG, WEBP (tối đa 5MB).</div>
+                            <div id="propertyImagePreview" class="mt-2" style="display: none;">
+                                <img src="" id="propertyImagePreviewImg" class="rounded border shadow-sm" style="max-height: 180px; object-fit: cover;" alt="Xem trước">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('properties.index') }}" class="btn btn-outline-secondary">Hủy bỏ</a>
                         <button type="submit" class="btn btn-primary px-4 fw-bold">
@@ -113,4 +125,18 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('propertyImageInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('propertyImagePreviewImg').src = event.target.result;
+                document.getElementById('propertyImagePreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
 @endsection

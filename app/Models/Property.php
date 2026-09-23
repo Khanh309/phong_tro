@@ -26,12 +26,22 @@ class Property extends Model
         'default_internet_type',
         'default_internet_rate',
         'description',
+        'image',
     ];
 
     protected $casts = [
         'default_water_rate' => 'decimal:0',
         'default_internet_rate' => 'decimal:0',
     ];
+
+    public function getImageUrlAttribute(): string
+    {
+        if ($this->image) {
+            return asset('storage/' . $this->image);
+        }
+
+        return 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80';
+    }
 
     public function getDefaultWaterTypeLabelAttribute(): string
     {

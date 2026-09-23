@@ -30,6 +30,7 @@ class Room extends Model
         'internet_type',
         'internet_rate',
         'description',
+        'images',
     ];
 
     protected $casts = [
@@ -40,7 +41,46 @@ class Room extends Model
         'initial_water' => 'decimal:1',
         'water_rate' => 'decimal:0',
         'internet_rate' => 'decimal:0',
+        'images' => 'array',
     ];
+
+    public function getPrimaryImageUrlAttribute(): string
+    {
+        if (!empty($this->images) && is_array($this->images) && count($this->images) > 0) {
+            return asset('storage/' . $this->images[0]);
+        }
+
+        $fallbackImages = [
+            'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=700&q=80',
+            'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=700&q=80',
+            'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=700&q=80',
+            'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=700&q=80',
+            'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=700&q=80',
+            'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=700&q=80',
+            'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=700&q=80',
+            'https://images.unsplash.com/photo-1540518614846-7ede433c4550?auto=format&fit=crop&w=700&q=80',
+        ];
+
+        return $fallbackImages[$this->id % count($fallbackImages)];
+    }
+
+    public function getAllImageUrlsAttribute(): array
+    {
+        if (!empty($this->images) && is_array($this->images) && count($this->images) > 0) {
+            return array_map(fn($path) => asset('storage/' . $path), $this->images);
+        }
+
+        return [$this->primary_image_url];
+    }
+
+    public function getImagesCountAttribute(): int
+    {
+        if (!empty($this->images) && is_array($this->images)) {
+            return count($this->images);
+        }
+
+        return 5; // Mặc định hiển thị 5 ảnh mẫu nếu chưa upload
+    }
 
     public function getWaterTypeLabelAttribute(): string
     {

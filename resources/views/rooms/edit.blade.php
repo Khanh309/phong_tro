@@ -17,7 +17,7 @@
                 @endif
             </div>
             <div class="card-body p-4">
-                <form action="{{ route('rooms.update', $room->id) }}" method="POST">
+                <form action="{{ route('rooms.update', $room->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -113,6 +113,39 @@
                         </div>
                     </div>
 
+                    <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">3. Quản lý Hình ảnh chụp thực tế của phòng</h6>
+                    
+                    @if(!empty($room->images) && count($room->images) > 0)
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-dark">Các ảnh hiện có (Tích chọn ảnh muốn xóa):</label>
+                            <div class="d-flex flex-wrap gap-3">
+                                @foreach($room->images as $index => $imgPath)
+                                    <div class="card p-1 shadow-sm border text-center position-relative" style="width: 140px;">
+                                        <img src="{{ asset('storage/' . $imgPath) }}" class="rounded object-fit-cover w-100" style="height: 100px;" alt="Ảnh phòng {{ $room->room_number }}">
+                                        <div class="form-check mt-1 d-flex align-items-center justify-content-center gap-1">
+                                            <input class="form-check-input border-danger" type="checkbox" name="delete_images[]" value="{{ $imgPath }}" id="del_img_{{ $index }}">
+                                            <label class="form-check-label small text-danger fw-bold" for="del_img_{{ $index }}">
+                                                Xóa ảnh
+                                            </label>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="form-text text-danger mt-1"><i class="bi bi-info-circle"></i> Tích chọn vào ô "Xóa ảnh" và bấm Cập Nhật Phòng, hệ thống sẽ tự động xóa file vĩnh viễn khỏi máy chủ.</div>
+                        </div>
+                    @else
+                        <div class="alert alert-light border small text-muted mb-3">
+                            <i class="bi bi-camera me-1"></i> Phòng này hiện chưa có ảnh tải lên thực tế (đang dùng ảnh mẫu mặc định).
+                        </div>
+                    @endif
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Tải thêm ảnh mới cho phòng:</label>
+                        <input type="file" name="images[]" id="roomImagesEditInput" class="form-control" multiple accept="image/*">
+                        <div class="form-text">Bạn có thể chọn thêm nhiều ảnh mới để bổ sung vào album ảnh phòng (JPG, PNG, WEBP, tối đa 5MB/ảnh).</div>
+                        <div id="imageEditPreviewContainer" class="d-flex flex-wrap gap-2 mt-3"></div>
+                    </div>
+
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('rooms.show', $room->id) }}" class="btn btn-outline-secondary">Hủy bỏ</a>
                         <button type="submit" class="btn btn-primary px-4 fw-bold">Cập Nhật Phòng</button>
@@ -122,4 +155,29 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('roomImagesEditInput').addEventListener('change', function(e) {
+        const container = document.getElementById('imageEditPreviewContainer');
+        container.innerHTML = '';
+        const files = Array.from(e.target.files);
+        files.forEach((file, index) => {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const div = document.createElement('div');
+                    div.className = 'position-relative border rounded p-1 bg-light shadow-sm';
+                    div.style.width = '110px';
+                    div.style.height = '110px';
+                    div.innerHTML = `
+                        <img src="${event.target.result}" class="w-100 h-100 rounded object-fit-cover" alt="Preview mới">
+                        <span class="badge bg-success position-absolute bottom-0 start-50 translate-middle-x mb-1 small" style="font-size:0.65rem;">Mới ${index + 1}</span>
+                    `;
+                    container.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+</script>
 @endsection

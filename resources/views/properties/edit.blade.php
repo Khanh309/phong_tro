@@ -17,7 +17,7 @@
                 </form>
             </div>
             <div class="card-body p-4">
-                <form action="{{ route('properties.update', $property->id) }}" method="POST">
+                <form action="{{ route('properties.update', $property->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -110,6 +110,32 @@
                         </div>
                     </div>
 
+                    <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">5. Ảnh đại diện cơ sở / tòa nhà</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            @if($property->image)
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold text-dark">Ảnh hiện tại:</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="{{ asset('storage/' . $property->image) }}" class="rounded border shadow-sm" style="max-height: 140px; object-fit: cover;" alt="{{ $property->name }}">
+                                        <div class="form-check">
+                                            <input class="form-check-input border-danger" type="checkbox" name="remove_image" value="1" id="removePropertyImage">
+                                            <label class="form-check-label text-danger fw-bold small" for="removePropertyImage">
+                                                Xóa ảnh này (Sử dụng ảnh mẫu mặc định)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                            <label class="form-label fw-semibold">Thay đổi ảnh đại diện tòa nhà:</label>
+                            <input type="file" name="image" id="propertyImageEditInput" class="form-control" accept="image/*">
+                            <div class="form-text">Chọn ảnh mới để thay thế ảnh hiện tại (JPG, PNG, WEBP, tối đa 5MB).</div>
+                            <div id="propertyImageEditPreview" class="mt-2" style="display: none;">
+                                <img src="" id="propertyImageEditPreviewImg" class="rounded border shadow-sm" style="max-height: 140px; object-fit: cover;" alt="Xem trước mới">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('properties.index') }}" class="btn btn-outline-secondary">Hủy bỏ</a>
                         <button type="submit" class="btn btn-primary px-4 fw-bold">Cập Nhật Thông Tin</button>
@@ -119,4 +145,18 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('propertyImageEditInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('propertyImageEditPreviewImg').src = event.target.result;
+                document.getElementById('propertyImageEditPreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
 @endsection

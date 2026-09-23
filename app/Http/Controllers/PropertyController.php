@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Property;
+use Illuminate\Support\Facades\Storage;
 
 class PropertyController extends Controller
 {
@@ -48,12 +49,17 @@ class PropertyController extends Controller
             'default_internet_type' => 'nullable|in:fixed,per_person,free',
             'default_internet_rate' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
         $validated['default_water_type'] = $validated['default_water_type'] ?? 'meter';
         $validated['default_water_rate'] = $validated['default_water_rate'] ?? 30000;
         $validated['default_internet_type'] = $validated['default_internet_type'] ?? 'fixed';
         $validated['default_internet_rate'] = $validated['default_internet_rate'] ?? 100000;
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('properties', 'public');
+        }
 
         $property = Property::create($validated);
 
@@ -99,12 +105,28 @@ class PropertyController extends Controller
             'default_internet_type' => 'nullable|in:fixed,per_person,free',
             'default_internet_rate' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'remove_image' => 'nullable|boolean',
         ]);
 
         $validated['default_water_type'] = $validated['default_water_type'] ?? ($property->default_water_type ?? 'meter');
         $validated['default_water_rate'] = $validated['default_water_rate'] ?? ($property->default_water_rate ?? 30000);
         $validated['default_internet_type'] = $validated['default_internet_type'] ?? ($property->default_internet_type ?? 'fixed');
         $validated['default_internet_rate'] = $validated['default_internet_rate'] ?? ($property->default_internet_rate ?? 100000);
+
+        if ($request->boolean('remove_image')) {
+            if ($property->image) {
+                Storage::disk('public')->delete($property->image);
+            }
+            $validated['image'] = null;
+        }
+
+        if ($request->hasFile('image')) {
+            if ($property->image) {
+                Storage::disk('public')->delete($property->image);
+            }
+            $validated['image'] = $request->file('image')->store('properties', 'public');
+        }
 
         $property->update($validated);
 
@@ -115,6 +137,10 @@ class PropertyController extends Controller
     {
         if ($property->rooms()->count() > 0) {
             return back()->with('error', 'Không thể xóa nhà trọ đang có phòng trọ! Vui lòng xóa hết các phòng trước.');
+        }
+
+        if ($property->image) {
+            Storage::disk('public')->delete($property->image);
         }
 
         $property->delete();

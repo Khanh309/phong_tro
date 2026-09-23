@@ -7,6 +7,7 @@ use App\Models\Room;
 use App\Models\Property;
 use App\Models\RoomFee;
 use App\Models\RoomAsset;
+use Illuminate\Support\Facades\Storage;
 
 class RoomController extends Controller
 {
@@ -81,6 +82,8 @@ class RoomController extends Controller
             'internet_type' => 'nullable|in:fixed,per_person,free',
             'internet_rate' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
         $user = $request->user();
@@ -91,6 +94,15 @@ class RoomController extends Controller
         $property = Property::find($validated['property_id']);
         $validated['internet_type'] = $validated['internet_type'] ?? ($property?->default_internet_type ?? 'fixed');
         $validated['internet_rate'] = $validated['internet_rate'] ?? ($property?->default_internet_rate ?? 100000);
+
+        $imagePaths = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('rooms', 'public');
+                $imagePaths[] = $path;
+            }
+        }
+        $validated['images'] = $imagePaths;
 
         $room = Room::create($validated);
 
@@ -176,6 +188,10 @@ class RoomController extends Controller
             'internet_type' => 'nullable|in:fixed,per_person,free',
             'internet_rate' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
+            'delete_images' => 'nullable|array',
+            'delete_images.*' => 'string',
         ]);
 
         if ($user && !$user->isAdmin() && $validated['property_id'] != $user->property_id) {
@@ -184,6 +200,28 @@ class RoomController extends Controller
 
         $validated['internet_type'] = $validated['internet_type'] ?? ($room->internet_type ?? 'fixed');
         $validated['internet_rate'] = $validated['internet_rate'] ?? ($room->internet_rate ?? 100000);
+
+        $currentImages = $room->images ?? [];
+
+        // 1. Xóa các file ảnh được chọn xóa khỏi Storage
+        if ($request->has('delete_images') && is_array($request->delete_images)) {
+            foreach ($request->delete_images as $imgToDelete) {
+                if (in_array($imgToDelete, $currentImages)) {
+                    Storage::disk('public')->delete($imgToDelete);
+                    $currentImages = array_values(array_filter($currentImages, fn($img) => $img !== $imgToDelete));
+                }
+            }
+        }
+
+        // 2. Lưu thêm các file ảnh mới vào Storage
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('rooms', 'public');
+                $currentImages[] = $path;
+            }
+        }
+
+        $validated['images'] = $currentImages;
 
         $room->update($validated);
 
@@ -213,6 +251,13 @@ class RoomController extends Controller
 
         if ($room->status === 'occupied') {
             return back()->with('error', 'Không thể xóa phòng đang có khách thuê!');
+        }
+
+        // Tự động xóa sạch toàn bộ file ảnh của phòng trong Storage
+        if (!empty($room->images) && is_array($room->images)) {
+            foreach ($room->images as $imgPath) {
+                Storage::disk('public')->delete($imgPath);
+            }
         }
 
         $room->delete();

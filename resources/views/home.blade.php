@@ -587,8 +587,9 @@
 
                 @forelse($vacantRooms as $index => $room)
                     @php
-                        $roomPhoto = $realRoomImages[$room->id % count($realRoomImages)];
+                        $roomPhoto = $room->primary_image_url;
                         $displayPrice = number_format($room->price, 0, ',', '.') . ' đ/tháng';
+                        $roomImagesJson = json_encode($room->all_image_urls);
                     @endphp
                     <div class="listing-card">
                         <div class="row g-0">
@@ -600,7 +601,7 @@
                                         <i class="bi bi-patch-check-fill me-1"></i>Chính Chủ
                                     </span>
                                     <span class="badge-photo-count">
-                                        <i class="bi bi-camera-fill me-1"></i>5 ảnh
+                                        <i class="bi bi-camera-fill me-1"></i>{{ $room->images_count }} ảnh
                                     </span>
                                 </div>
                             </div>
@@ -610,7 +611,7 @@
                                 <div>
                                     <!-- TIÊU ĐỀ BÀI ĐĂNG THỰC TẾ -->
                                     <h3 class="mb-1">
-                                        <a href="javascript:void(0)" class="listing-title" onclick="openContactModal('{{ $room->room_number }}', '{{ $room->property->name }}', '{{ $room->property->address }}', '{{ $displayPrice }}')">
+                                        <a href="javascript:void(0)" class="listing-title" onclick='openContactModal("{{ $room->room_number }}", "{{ $room->property->name }}", "{{ $room->property->address }}", "{{ $displayPrice }}", {{ $roomImagesJson }})'>
                                             CHO THUÊ PHÒNG P{{ $room->room_number }} KHÉP KÍN FULL ĐỒ — {{ mb_strtoupper($room->property->name) }}
                                         </a>
                                     </h3>
@@ -805,6 +806,12 @@
                         <div class="text-muted mt-2 pt-2 border-top" style="font-size: 0.8rem;" id="modalPropertyAddress"></div>
                     </div>
 
+                    <!-- THUMBNAIL GALLERY TRONG MODAL -->
+                    <div id="modalGalleryContainer" class="mb-3 text-start">
+                        <div class="small fw-semibold text-muted mb-1"><i class="bi bi-images text-primary me-1"></i>Hình ảnh thực tế của phòng (Bấm để phóng to):</div>
+                        <div id="modalGallery" class="d-flex gap-2 overflow-x-auto pb-2"></div>
+                    </div>
+
                     <div class="my-3">
                         <p class="small text-muted mb-3">Bạn vui lòng gọi trực tiếp hoặc nhắn tin Zalo để hẹn lịch xem phòng và nhận tư vấn chi tiết:</p>
                         <a href="tel:0988888888" class="btn btn-danger btn-lg w-100 fw-bold mb-2 shadow-sm">
@@ -885,11 +892,30 @@
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function openContactModal(roomNumber, propName, propAddress, roomPrice) {
+        function openContactModal(roomNumber, propName, propAddress, roomPrice, images) {
             document.getElementById('modalRoomNumber').textContent = 'Phòng ' + roomNumber;
             document.getElementById('modalPropertyName').textContent = propName;
             document.getElementById('modalRoomPrice').textContent = roomPrice;
             document.getElementById('modalPropertyAddress').innerHTML = '<i class="bi bi-geo-alt-fill text-danger me-1"></i> <b>Địa chỉ:</b> ' + propAddress;
+
+            var gallery = document.getElementById('modalGallery');
+            var container = document.getElementById('modalGalleryContainer');
+            gallery.innerHTML = '';
+
+            if (images && images.length > 0) {
+                images.forEach(function(imgUrl) {
+                    var a = document.createElement('a');
+                    a.href = imgUrl;
+                    a.target = '_blank';
+                    a.className = 'flex-shrink-0';
+                    a.innerHTML = '<img src="' + imgUrl + '" class="rounded border shadow-sm" style="width: 100px; height: 75px; object-fit: cover;" alt="Ảnh phòng">';
+                    gallery.appendChild(a);
+                });
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+            }
+
             var modal = new bootstrap.Modal(document.getElementById('contactModal'));
             modal.show();
         }

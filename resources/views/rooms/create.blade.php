@@ -10,7 +10,7 @@
                 <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-door-open-fill text-primary me-2"></i>Thêm Phòng Trọ Mới</h5>
             </div>
             <div class="card-body p-4">
-                <form action="{{ route('rooms.store') }}" method="POST">
+                <form action="{{ route('rooms.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">1. Vị trí & Giá phòng</h6>
@@ -105,6 +105,14 @@
                         </div>
                     </div>
 
+                    <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">3. Hình ảnh chụp thực tế của phòng (Có thể tải lên nhiều ảnh)</h6>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Chọn các ảnh chụp phòng (Phòng ngủ, nhà vệ sinh, ban công, bếp...)</label>
+                        <input type="file" name="images[]" id="roomImagesInput" class="form-control" multiple accept="image/*">
+                        <div class="form-text">Có thể chọn nhiều file ảnh cùng lúc (định dạng JPG, PNG, WEBP, tối đa 5MB/ảnh).</div>
+                        <div id="imagePreviewContainer" class="d-flex flex-wrap gap-2 mt-3"></div>
+                    </div>
+
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('rooms.index') }}" class="btn btn-outline-secondary">Hủy bỏ</a>
                         <button type="submit" class="btn btn-primary px-4 fw-bold">Lưu Phòng Mới</button>
@@ -114,4 +122,29 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('roomImagesInput').addEventListener('change', function(e) {
+        const container = document.getElementById('imagePreviewContainer');
+        container.innerHTML = '';
+        const files = Array.from(e.target.files);
+        files.forEach((file, index) => {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const div = document.createElement('div');
+                    div.className = 'position-relative border rounded p-1 bg-light shadow-sm';
+                    div.style.width = '110px';
+                    div.style.height = '110px';
+                    div.innerHTML = `
+                        <img src="${event.target.result}" class="w-100 h-100 rounded object-fit-cover" alt="Preview">
+                        <span class="badge bg-dark bg-opacity-75 position-absolute bottom-0 start-50 translate-middle-x mb-1 small" style="font-size:0.65rem;">Ảnh ${index + 1}</span>
+                    `;
+                    container.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+</script>
 @endsection
