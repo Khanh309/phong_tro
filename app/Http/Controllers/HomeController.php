@@ -64,7 +64,18 @@ class HomeController extends Controller
             });
         }
 
-        $vacantRooms = $query->orderBy('price', 'asc')->paginate(12)->withQueryString();
+        $sort = $request->query('sort', 'newest');
+        if ($sort === 'price_asc') {
+            $query->orderBy('price', 'asc');
+        } elseif ($sort === 'price_desc') {
+            $query->orderBy('price', 'desc');
+        } elseif ($sort === 'area_desc') {
+            $query->orderBy('area', 'desc');
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        $vacantRooms = $query->paginate(10)->withQueryString();
         $totalVacantCount = Room::where('status', 'available')->count();
 
         return view('home', compact(
@@ -76,6 +87,7 @@ class HomeController extends Controller
             'maxPrice',
             'minArea',
             'search',
+            'sort',
             'totalVacantCount'
         ));
     }
